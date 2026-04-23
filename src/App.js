@@ -261,16 +261,16 @@ const App = () => {
         )}
         {activeTab === 'plan' && (
           <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center px-2"><h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 시스템 계획</h2></div>
+            <div className="flex justify-between items-center px-2"><h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 계획</h2></div>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-6 border-b border-gray-50 pb-3"><h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">지출 계획</h3><button onClick={() => setIsExpensePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button></div>
-              <div className="space-y-6">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3"><h3 className="text-base font-black text-gray-400 uppercase tracking-widest">지출 계획</h3><button onClick={() => setIsExpensePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button></div>
+              <div className="space-y-3">
                 {expensePlans.map(plan => {
                   const spent = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
                   const progress = Math.min((spent / (plan.budget || 1)) * 100, 100);
                   const isOver = spent > plan.budget;
                   return (
-                    <div key={plan.id} className="space-y-2 group">
+                    <div key={plan.id} className="space-y-2 group p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-gray-100 transition-all">
                       <div className="flex justify-between text-[11px] font-black px-1">
                         <div className="flex items-center gap-2"><span className="text-gray-800">{plan.category}</span>{plan.nature === '고정' && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">FIXED</span>}</div>
                         <div className="flex items-center gap-1.5"><span className={isOver ? "text-red-500" : "text-blue-600"}>{formatValue(spent, plan.currency)}</span><span className="text-gray-300 font-normal">/</span><span className="text-gray-400">{formatValue(plan.budget, plan.currency)}</span></div>
@@ -282,7 +282,7 @@ const App = () => {
               </div>
             </section>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-6 border-b border-gray-50 pb-3"><h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">수입 계획</h3><button onClick={() => setIsIncomePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button></div>
+              <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3"><h3 className="text-base font-black text-gray-400 uppercase tracking-widest">수입 계획</h3><button onClick={() => setIsIncomePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button></div>
               <div className="grid grid-cols-1 gap-3">
                 {incomePlans.map(plan => {
                   const actual = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
