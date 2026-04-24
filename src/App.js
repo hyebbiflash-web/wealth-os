@@ -2,8 +2,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, PiggyBank, X, Sparkles, Loader2, Filter, Calendar, LogIn, LogOut, Settings, Trash2, ChevronRight, AlertCircle, CheckCircle2, ChevronDown, ShieldCheck, User, Plus, Edit2, UserCheck, Hash, Building2, Edit, PartyPopper, Phone, Search, CreditCard, Save, Mail, Lock } from 'lucide-react';
+import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, PiggyBank, X, Loader2, Filter, Calendar,  LogOut, Settings, Trash2, ChevronRight,  ShieldCheck,  Plus,  UserCheck, Building2, Edit, CreditCard} from 'lucide-react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXkr2KSM8ccqLkeRoHNDgV7CdDyDaEFXs",
@@ -27,6 +27,9 @@ const CURRENCY_UNITS = [
   { label: 'EUR (€)', value: 'EUR' },
   { label: 'CNY (¥)', value: 'CNY' },
   { label: 'Gold (g)', value: 'Gold' }
+  { label: 'BTC (BTC)', value: '비트코인' }
+  { label: 'ETH (ETH)', value: '이더리움' }
+  { label: 'USDT (USDT)', value: '스테이블코인' }
 ];
 
 const ASSET_CATEGORIES = ['현금성', '투자성', '연금', '보장성', '부채', '기타 (직접 입력)'];
