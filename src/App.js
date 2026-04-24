@@ -287,7 +287,7 @@ const App = () => {
             <div className="flex justify-between items-center px-2"><h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 계획</h2></div>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-                <h3 className="text-xs font-bold text-gray-400 tracking-wide">지출 계획</h3>
+                <h3 className="text-m font-bold text-gray-400 tracking-wide">지출 계획</h3>
                 <button onClick={() => setIsExpensePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button>
               </div>
               <div className="space-y-3">
@@ -309,7 +309,7 @@ const App = () => {
             </section>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-                <h3 className="text-xs font-bold text-gray-400 tracking-wide">수입 계획</h3>
+                <h3 className="text-m font-bold text-gray-400 tracking-wide">수입 계획</h3>
                 <button onClick={() => setIsIncomePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button>
               </div>
               <div className="grid grid-cols-1 gap-3">
