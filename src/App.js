@@ -242,7 +242,7 @@ const App = () => {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative overflow-hidden font-sans text-left">
+    <div className="flex flex-col h-dvh bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative overflow-hidden font-sans text-left">
       <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
         <div><h1 className="text-xl font-bold tracking-tight">Wealth os</h1><p className="text-[10px] text-gray-400 font-bold">USER: <span className="text-blue-600">{user?.email?.split('@')[0] || user?.displayName || '사용자'}</span></p></div>
         <button onClick={() => signOut(auth)} className="text-gray-300 hover:text-red-400 transition-colors"><LogOut size={20}/></button>
