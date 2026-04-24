@@ -87,6 +87,13 @@ const GoogleIcon = ({ white }) => (
 const AuthScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [autoLogin, setAutoLogin] = useState(() => localStorage.getItem('autoLogin') === 'true');
+
+  useEffect(() => {
+    if (autoLogin) {
+      handleGoogleLogin();
+    }
+  }, []);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -95,10 +102,18 @@ const AuthScreen = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (err) {
       setError('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setAutoLogin(false);
+      localStorage.setItem('autoLogin', 'false');
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleAutoLogin = () => {
+    const next = !autoLogin;
+    setAutoLogin(next);
+    localStorage.setItem('autoLogin', String(next));
   };
 
   return (
@@ -114,11 +129,14 @@ const AuthScreen = () => {
         <div className="space-y-6">
           <p className="text-sm font-bold text-gray-500 leading-relaxed">자산 관리를 시작하기 위해<br/>구글 계정으로 로그인해주세요.</p>
           <div className="space-y-3">
-            <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-              {loading ? <Loader2 className="animate-spin text-blue-600" size={20}/> : <><GoogleIcon/><span>구글 계정으로 계속하기</span></>}
-            </button>
             <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
-              {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 가입하기</span></>}
+              {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
+            </button>
+            <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-gray-400 hover:text-blue-500 transition-colors">
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+                {autoLogin && <span className="text-white text-xs">✓</span>}
+              </div>
+              자동 로그인
             </button>
           </div>
           {error && <p className="text-red-500 text-[11px] font-bold mt-4">{error}</p>}
