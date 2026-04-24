@@ -26,9 +26,9 @@ const CURRENCY_UNITS = [
   { label: 'JPY (¥)', value: 'JPY' },
   { label: 'EUR (€)', value: 'EUR' },
   { label: 'CNY (¥)', value: 'CNY' },
-  { label: 'Gold (g)', value: 'Gold' }
-  { label: 'BTC (BTC)', value: '비트코인' }
-  { label: 'ETH (ETH)', value: '이더리움' }
+  { label: 'Gold (g)', value: 'Gold' },
+  { label: 'BTC (BTC)', value: '비트코인' },
+  { label: 'ETH (ETH)', value: '이더리움' },
   { label: 'USDT (USDT)', value: '스테이블코인' }
 ];
 
