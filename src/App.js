@@ -242,13 +242,11 @@ const App = () => {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="flex flex-col h-dvh bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative overflow-hidden font-sans text-left">
-      <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
+<div className="flex flex-col bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative font-sans text-left" style={{height: '100dvh', overflow: 'hidden'}}>      <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
         <div><h1 className="text-xl font-bold tracking-tight">Wealth os</h1><p className="text-[10px] text-gray-400 font-bold">USER: <span className="text-blue-600">{user?.email?.split('@')[0] || user?.displayName || '사용자'}</span></p></div>
         <button onClick={() => signOut(auth)} className="text-gray-300 hover:text-red-400 transition-colors"><LogOut size={20}/></button>
       </header>
-      <main className="flex-1 overflow-y-auto pb-24 px-4 pt-4">
-        {activeTab === 'dashboard' && (
+      <main className="flex-1 px-4 pt-4" style={{overflowY: 'auto', paddingBottom: '1rem'}}>        {activeTab === 'dashboard' && (
           <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-1"><input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-gray-100 px-2 py-1 rounded-lg font-bold text-sm outline-none" /><span className="text-[11px] text-gray-400 font-bold">오늘 {new Date().toLocaleDateString()}</span></div>
             <div className="bg-gray-900 p-6 rounded-3xl text-white shadow-xl">
