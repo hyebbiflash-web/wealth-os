@@ -385,11 +385,10 @@ const App = () => {
       </main>
       <nav className="bg-white border-t flex justify-around items-center h-20 px-2 sticky bottom-0 z-30 shadow-inner">
         <SidebarItem id="dashboard" icon={LayoutDashboard} label="홈" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <SidebarItem id="dashboard" icon={LayoutDashboard} label="홈" activeTab={activeTab} setActiveTab={setActiveTab} />
-<SidebarItem id="assets" icon={Wallet} label="자산" activeTab={activeTab} setActiveTab={setActiveTab} />
-<SidebarItem id="plan" icon={Target} label="계획" activeTab={activeTab} setActiveTab={setActiveTab} />
-<SidebarItem id="record" icon={PlusCircle} label="기록" activeTab={activeTab} setActiveTab={setActiveTab} />
-<SidebarItem id="history" icon={History} label="내역" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SidebarItem id="assets" icon={Wallet} label="자산" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SidebarItem id="plan" icon={Target} label="계획" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SidebarItem id="record" icon={PlusCircle} label="기록" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SidebarItem id="history" icon={History} label="내역" activeTab={activeTab} setActiveTab={setActiveTab} />
       </nav>
       {isExpensePlanModalOpen && (
         <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
