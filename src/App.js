@@ -570,6 +570,7 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
       </div>
       <div className="flex gap-2 pt-4">
         <button onClick={onCancel} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-colors">취소</button>
+        <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 ml-1">메모</label><textarea value={data.memo || ''} onChange={e => setData({...data, memo: e.target.value})} placeholder="메모를 입력하세요" rows={2} className="w-full p-3 bg-gray-50 rounded-2xl font-bold text-sm outline-none border resize-none" /></div>
         <button onClick={() => onSave(data)} className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 text-center">저장하기</button>
       </div>
     </div>
@@ -611,6 +612,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
           <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">자산 선택</label><select value={tx.accountId} onChange={e => setTx({...tx, accountId: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-1 ring-blue-500 cursor-pointer"><option value="">선택하세요</option>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({formatValue(acc.balance, acc.currency)})</option>)}</select></div>
           <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-1 ring-blue-500 cursor-pointer" />
         </div>
+        <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">메모</label><textarea value={tx.memo || ''} onChange={e => setTx({...tx, memo: e.target.value})} placeholder="메모를 입력하세요" rows={2} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border resize-none" /></div>
         <button onClick={() => onSubmit({...tx, manager: isCustomMgr ? tx.customManager : tx.manager})} className={`w-full py-4 rounded-2xl text-white font-bold shadow-xl active:scale-95 transition-all ${tx.type==='expense'?'bg-blue-600':'bg-indigo-600'}`}>{buttonLabel}</button>
       </div>
     </div>
