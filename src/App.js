@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, PiggyBank, X, Loader2, Filter, Calendar, LogOut, Settings, Trash2, ChevronRight, ShieldCheck, Plus, UserCheck, Building2, Edit, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, PiggyBank, X, Loader2, Filter, Calendar, LogOut, Settings, Trash2, ChevronRight, Plus, UserCheck, Building2, Edit, CreditCard } from 'lucide-react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXkr2KSM8ccqLkeRoHNDgV7CdDyDaEFXs",
@@ -89,17 +89,16 @@ const AuthScreen = () => {
   const [error, setError] = useState('');
   const [autoLogin, setAutoLogin] = useState(() => localStorage.getItem('autoLogin') === 'true');
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    if (autoLogin) { handleGoogleLogin(); }
-  }, []);
-
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = useCallback(async () => {
     setLoading(true); setError('');
     try { await signInWithPopup(auth, googleProvider); }
     catch (err) { setError('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.'); setAutoLogin(false); localStorage.setItem('autoLogin', 'false'); console.error(err); }
     finally { setLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (autoLogin) { handleGoogleLogin(); }
+  }, [autoLogin, handleGoogleLogin]);
 
   const toggleAutoLogin = () => { const next = !autoLogin; setAutoLogin(next); localStorage.setItem('autoLogin', String(next)); };
 
@@ -126,9 +125,12 @@ const AuthScreen = () => {
           </button>
         </div>
 
-        {/* 1) 자동로그인 버튼 수정: 카카오톡 스타일로 작게 변경 */}
         <div className="flex justify-center mb-8">
-          <button onClick={toggleAutoLogin} className="flex items-center gap-2 px-1 py-1 text-[13px] font-bold text-gray-500 transition-all active:scale-95">
+          <button 
+            onClick={toggleAutoLogin} 
+            className="flex items-center gap-2 px-1 py-1 text-[13px] font-bold text-gray-500 transition-all active:scale-95 bg-transparent border-none outline-none focus:outline-none ring-0 shadow-none"
+            style={{ border: 'none', background: 'none', outline: 'none', boxShadow: 'none' }}
+          >
             <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${autoLogin ? 'border-red-800 bg-[#b40023]' : 'border-gray-300 bg-white'}`}>
               {autoLogin && <span className="text-white text-[10px]">✓</span>}
             </div>
@@ -138,11 +140,11 @@ const AuthScreen = () => {
         
         {error && <p className="text-red-500 text-[11px] font-bold mb-4">{error}</p>}
 
-        {/* 2) 탈퇴하기 버튼 수정: 배경 삭제 및 글자만 노출 */}
         <div className="pt-6 border-t border-gray-100">
           <button 
             onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} 
-            className="text-xs text-gray-400 font-bold hover:text-gray-600 transition-colors bg-transparent border-none p-0"
+            className="text-xs text-gray-400 font-bold hover:text-gray-600 transition-colors bg-transparent border-none p-0 outline-none focus:outline-none ring-0 shadow-none"
+            style={{ border: 'none', background: 'none', outline: 'none', boxShadow: 'none' }}
           >
             탈퇴하기
           </button>
@@ -226,18 +228,25 @@ const App = () => {
 
   const multiCurrencyTotals = useMemo(() => {
     const totals = {};
-    accounts.forEach(acc => { const unit = acc.currency || 'KRW'; totals[unit] = (totals[unit] || 0) + acc.balance; });
+    accounts.forEach(acc => {
+      const unit = acc.currency || 'KRW';
+      totals[unit] = (totals[unit] || 0) + (Number(acc.balance) || 0);
+    });
     return totals;
   }, [accounts]);
 
   const handleAddTransaction = async (txData) => {
     if (!userPath) return;
     const amount = parseInt(txData.amount) || 0;
-    if (txData.id) { await updateDoc(doc(db, userPath, 'transactions', txData.id), { ...txData, amount }); setIsTransactionEditModalOpen(false); }
-    else {
+    if (txData.id) {
+      await updateDoc(doc(db, userPath, 'transactions', txData.id), { ...txData, amount });
+      setIsTransactionEditModalOpen(false);
+    } else {
       await addDoc(collection(db, userPath, 'transactions'), { ...txData, amount });
       const targetAcc = accounts.find(a => a.id === txData.accountId);
-      if (targetAcc) { await updateDoc(doc(db, userPath, 'accounts', targetAcc.id), { balance: targetAcc.balance + (txData.type === 'expense' ? -amount : amount) }); }
+      if (targetAcc) {
+        await updateDoc(doc(db, userPath, 'accounts', targetAcc.id), { balance: targetAcc.balance + (txData.type === 'expense' ? -amount : amount) });
+      }
       setActiveTab('dashboard');
     }
   };
@@ -270,21 +279,34 @@ const App = () => {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center px-1"><input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-gray-100 px-2 py-1 rounded-lg font-bold text-sm outline-none" /><span className="text-[11px] text-gray-400 font-bold">오늘 {new Date().toLocaleDateString()}</span></div>
+            
             <div className="bg-gray-900 p-6 rounded-3xl text-white shadow-xl">
               <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">총 자산 현황</span>
-              <div className="mt-2 space-y-2">
+              <div className="mt-4 space-y-3">
                 {Object.keys(multiCurrencyTotals).length === 0 ? (
-                  <div className="text-3xl font-bold text-red-600">₩0</div>
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2 last:border-0 last:pb-0">
+                    <span className="text-xs text-gray-500 font-bold uppercase">KRW</span>
+                    <div className="text-2xl font-bold tracking-tight">₩0</div>
+                  </div>
                 ) : (
-                  Object.entries(multiCurrencyTotals).map(([unit, val]) => (
-                    <div key={unit} className="flex justify-between items-baseline border-b border-white/10 pb-1 last:border-0 last:pb-0">
-                      <span className="text-[10px] text-gray-500 font-bold uppercase">{unit}</span>
-                      <div className="text-xl font-bold">{formatValue(val, unit)}</div>
-                    </div>
-                  ))
+                  Object.entries(multiCurrencyTotals)
+                    .sort(([unitA], [unitB]) => {
+                      if (unitA === 'KRW') return -1;
+                      if (unitB === 'KRW') return 1;
+                      return unitA.localeCompare(unitB);
+                    })
+                    .map(([unit, val]) => (
+                      <div key={unit} className="flex justify-between items-center border-b border-white/10 pb-2 last:border-0 last:pb-0">
+                        <span className="text-xs text-gray-500 font-bold uppercase">{unit}</span>
+                        <div className="text-2xl font-bold tracking-tight">
+                          {formatValue(val, unit)}
+                        </div>
+                      </div>
+                    ))
                 )}
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-amber-50 p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-red-500 font-bold"><ArrowDownCircle size={14}/><span>월 지출액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlySpent)}</div></div>
               <div className="bg-amber-50 p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-red-700 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
