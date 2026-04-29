@@ -1,3 +1,15 @@
+body, #root {
+  background-color: #fcf0d6 !important;
+}
+.bg-amber-50 {
+  background-color: #fcf0d6 !important;
+}
+:root {
+  --color-primary: #b40023;
+  --color-primary-dark: #8f001b;
+  --color-bg: #fcf0d6;
+  --color-white: #fcf0d6;
+}
 * { box-sizing: border-box; max-width: 100%; }
 html, body { overflow-x: hidden; width: 100%; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
