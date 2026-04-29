@@ -107,28 +107,32 @@ const AuthScreen = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-6">
       <div className="w-full max-w-sm bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center">
         <div className="mb-10">
-          <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100"><ShieldCheck className="text-white" size={40} /></div>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
+            <img src="/logo512.png" alt="logo" className="w-full h-full object-cover" />
+          </div>
           <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Wealth os</h1>
           <p className="text-sm text-gray-400 font-bold mt-2">자산 관리 시스템</p>
+          <p className="text-xs text-gray-300 font-bold mt-3">호방부부의 자산을 체계적으로 관리해요</p>
         </div>
-        <div className="space-y-6">
-          <p className="text-sm font-bold text-gray-500 leading-relaxed">자산 관리를 시작하기 위해<br/>구글 계정으로 로그인해주세요.</p>
-          <div className="space-y-3">
-            <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
-              {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
-            </button>
-            <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-gray-400 hover:text-blue-500 transition-colors">
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>{autoLogin && <span className="text-white text-xs">✓</span>}</div>
-              자동 로그인
-            </button>
-          </div>
-          {error && <p className="text-red-500 text-[11px] font-bold mt-4">{error}</p>}
+        <div className="space-y-3">
+          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
+            {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
+          </button>
+          <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-3 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+              {autoLogin && <span className="text-white text-xs">✓</span>}
+            </div>
+            자동 로그인
+          </button>
+          {error && <p className="text-red-500 text-[11px] font-bold mt-2">{error}</p>}
         </div>
         <div className="mt-12 pt-8 border-t border-gray-50">
-          <button onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} className="text-sm text-gray-400 font-bold hover:text-red-400 transition-colors">탈퇴하기</button>
+          <button onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} className="text-sm text-gray-400 font-bold hover:text-red-400 transition-colors">
+            탈퇴하기
+          </button>
         </div>
       </div>
-      <p className="mt-8 text-[9px] text-gray-300 font-black uppercase tracking-[0.4em]">System Stable V5.0</p>
+      <p className="mt-8 text-[9px] text-gray-300 font-black uppercase tracking-[0.4em]">Hobang bbu v1.0</p>
     </div>
   );
 };
