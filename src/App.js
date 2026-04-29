@@ -116,23 +116,34 @@ const AuthScreen = () => {
             <p className="text-sm font-bold text-gray-600">똑부러지게 자산 관리를 시작해봐요!</p>
           </div>
         </div>
-        <div className="space-y-3 mb-8">
+        
+        <div className="space-y-3 mb-4">
           <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-white active:scale-95 transition-all shadow-md" style={{backgroundColor: '#b40023', borderColor: '#b40023', border: '2px solid #b40023'}}>
             {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
           </button>
           <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
             {loading ? <Loader2 className="animate-spin text-gray-400" size={20}/> : <><GoogleIcon/><span>구글 계정으로 가입하기</span></>}
           </button>
-          <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 active:scale-95 transition-all">
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'border-red-800 text-white text-xs' : 'border-gray-300'}`} style={autoLogin ? {backgroundColor: '#b40023'} : {}}>
+        </div>
+
+        {/* 1) 자동로그인 버튼 수정: 카카오톡 스타일로 작게 변경 */}
+        <div className="flex justify-center mb-8">
+          <button onClick={toggleAutoLogin} className="flex items-center gap-2 px-1 py-1 text-[13px] font-bold text-gray-500 transition-all active:scale-95">
+            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${autoLogin ? 'border-red-800 bg-[#b40023]' : 'border-gray-300 bg-white'}`}>
               {autoLogin && <span className="text-white text-[10px]">✓</span>}
             </div>
             자동 로그인
           </button>
-          {error && <p className="text-red-500 text-[11px] font-bold mt-2">{error}</p>}
         </div>
+        
+        {error && <p className="text-red-500 text-[11px] font-bold mb-4">{error}</p>}
+
+        {/* 2) 탈퇴하기 버튼 수정: 배경 삭제 및 글자만 노출 */}
         <div className="pt-6 border-t border-gray-100">
-          <button onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} className="text-sm text-gray-400 font-bold hover:text-red-400 transition-colors">
+          <button 
+            onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} 
+            className="text-xs text-gray-400 font-bold hover:text-gray-600 transition-colors bg-transparent border-none p-0"
+          >
             탈퇴하기
           </button>
         </div>
