@@ -104,29 +104,34 @@ const AuthScreen = () => {
   const toggleAutoLogin = () => { const next = !autoLogin; setAutoLogin(next); localStorage.setItem('autoLogin', String(next)); };
 
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col justify-center items-center px-6">
-      <div className="w-full max-w-sm bg-amber-50 p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center">
-        <div className="mb-10">
+    <div className="min-h-screen flex flex-col justify-center items-center px-6" style={{backgroundColor: '#fcf0d6'}}>
+      <div className="w-full max-w-sm p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center" style={{backgroundColor: '#fcf0d6'}}>
+        <div className="mb-8">
           <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
             <img src="/logo512.png" alt="logo" className="w-full h-full object-cover" />
           </div>
-          <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Wealth os</h1>
+          <h1 className="text-3xl font-black tracking-tighter uppercase" style={{color: '#b40023'}}>Wealth os</h1>
           <p className="text-sm text-gray-400 font-bold mt-2">자산 관리 시스템</p>
-          <p className="text-xs text-gray-300 font-bold mt-3">호방부부의 자산을 체계적으로 관리해요</p>
+          <div className="mt-4 mb-2">
+            <p className="text-sm font-bold text-gray-600">똑부러지게 자산 관리를 시작해봐요!</p>
+          </div>
         </div>
-        <div className="space-y-3">
-          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-red-800 border-2 border-red-800 rounded-2xl font-bold text-white hover:bg-red-900 active:scale-95 transition-all shadow-md shadow-red-100">
+        <div className="space-y-3 mb-8">
+          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-white active:scale-95 transition-all shadow-md" style={{backgroundColor: '#b40023', borderColor: '#b40023', border: '2px solid #b40023'}}>
             {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
           </button>
-          <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-3 py-4 bg-amber-50 border-2 border-gray-100 rounded-2xl font-bold text-gray-500 hover:bg-amber-50 active:scale-95 transition-all shadow-sm">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-red-800 border-red-800' : 'border-gray-300'}`}>
-              {autoLogin && <span className="text-white text-xs">✓</span>}
+          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+            {loading ? <Loader2 className="animate-spin text-gray-400" size={20}/> : <><GoogleIcon/><span>구글 계정으로 가입하기</span></>}
+          </button>
+          <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 active:scale-95 transition-all">
+            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'border-red-800 text-white text-xs' : 'border-gray-300'}`} style={autoLogin ? {backgroundColor: '#b40023'} : {}}>
+              {autoLogin && <span className="text-white text-[10px]">✓</span>}
             </div>
             자동 로그인
           </button>
           {error && <p className="text-red-500 text-[11px] font-bold mt-2">{error}</p>}
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-50">
+        <div className="pt-6 border-t border-gray-100">
           <button onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} className="text-sm text-gray-400 font-bold hover:text-red-400 transition-colors">
             탈퇴하기
           </button>
