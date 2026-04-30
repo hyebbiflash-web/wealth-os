@@ -110,8 +110,8 @@ const AuthScreen = () => {
             <ShieldCheck className="text-white" size={40} />
           </div>
           <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Wealth os</h1>
-          <p className="text-sm text-gray-400 font-bold mt-1">자산 관리 시스템</p>
-          <p className="text-base font-bold text-gray-600 mt-4">똑부러지게 자산 관리를 시작해봐요!</p>
+          <p className="text-sm text-gray-400 font-bold mt-1">자산 관리 시스템 </p>
+          <p className="text-sm font-bold text-gray-600 mt-4">똑부러지게 자산 관리를 시작해봐요!</p>
         </div>
         <div className="space-y-3 mb-5">
           <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
@@ -129,16 +129,16 @@ const AuthScreen = () => {
     자동 로그인
   </button>
 </div>
-        {error && <p className="text-red-500 text-[11px] font-bold mb-4">{error}</p>}
-        <div className="mt-4 pt-6 border-t border-gray-100">
-        <button 
-  onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} 
-  className="text-xs text-gray-400 font-bold hover:text-red-400 transition-colors bg-none border-none outline-none shadow-none"
-  style={{ background: 'none', border: 'none', padding: 0 }}
->
-  탈퇴하기
-</button>
-        </div>
+{error && <p className="text-red-500 text-[11px] font-bold mb-4">{error}</p>}
+<div className="mt-6 pt-6 border-t border-gray-100">
+  <button
+    onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }}
+    className="text-xs text-gray-400 font-bold hover:text-red-400 transition-colors"
+    style={{ background: 'none', border: 'none', padding: 0 }}
+  >
+    탈퇴하기
+  </button>
+</div>
       </div>
       <p className="mt-8 text-[9px] text-gray-300 font-black uppercase tracking-[0.4em]">Hobang bbu v1.0</p>
     </div>
@@ -256,7 +256,7 @@ const App = () => {
     <div className="flex flex-col bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative font-sans text-left" style={{height: '100dvh', overflow: 'hidden'}}>
       <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
         <div><h1 className="text-xl font-bold tracking-tight">Wealth os</h1><p className="text-[10px] text-gray-400 font-bold">USER: <span className="text-blue-600">{user?.email?.split('@')[0] || user?.displayName || '사용자'}</span></p></div>
-        <button onClick={() => signOut(auth)} className="text-gray-500 hover:text-red-400 transition-colors"><LogOut size={20}/></button>
+        <button onClick={() => signOut(auth)} className="text-gray-400 hover:text-red-400 transition-colors p-0 bg-transparent border-0 shadow-none outline-none"><LogOut size={20}/></button>
       </header>
       <main className="flex-1 px-4 pt-4" style={{overflowY: 'auto', paddingBottom: '1rem'}}>
         {activeTab === 'dashboard' && (
@@ -282,7 +282,7 @@ const App = () => {
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-blue-500 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
             </div>
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-blue-500 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
+              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-red-700 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
               <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
@@ -631,7 +631,12 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
 
 const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   const active = activeTab === id;
-  return (<button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-all ${active ? 'text-blue-600 bg-blue-50 shadow-sm' : 'text-gray-400 hover:bg-gray-50'}`}><Icon size={24} /><span className="text-[10px] mt-1 font-bold">{label}</span></button>);
+  return (
+    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}>
+      <Icon size={24} />
+      <span className="text-[10px] mt-1 font-bold">{label}</span>
+    </button>
+  );
 };
 
 export default App;
