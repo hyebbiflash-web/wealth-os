@@ -282,7 +282,7 @@ const App = () => {
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-blue-500 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
             </div>
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-red-700 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
+              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-blue-500 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
               <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
@@ -632,7 +632,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
 const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   const active = activeTab === id;
   return (
-    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors ${active ? 'text-blue-600' : 'text-gray-400'}`}>
+    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors rounded-none ${active ? 'bg-blue-50 text-gray-400' : 'text-gray-400 hover:bg-gray-50'}`}>
       <Icon size={24} />
       <span className="text-[10px] mt-1 font-bold">{label}</span>
     </button>
