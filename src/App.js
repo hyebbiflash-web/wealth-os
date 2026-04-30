@@ -170,7 +170,9 @@ const App = () => {
   const [swipedAccountId, setSwipedAccountId] = useState(null);
   const [swipedTxId, setSwipedTxId] = useState(null);
   const [showPlanSaveMsg, setShowPlanSaveMsg] = useState(false);
+  const [swipedPlanId, setSwipedPlanId] = useState(null);
   const [swipedExpensePlanId, setSwipedExpensePlanId] = useState(null);
+  const [editingPlanId, setEditingPlanId] = useState(null);
   const [customManagers, setCustomManagers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('customManagers') || '[]'); } catch { return []; }
   });
@@ -322,7 +324,7 @@ const App = () => {
   return (
     <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedExpensePlanId(swipedExpensePlanId === plan.id ? null : plan.id)}>
       <div className="absolute inset-0 flex justify-end">
-        <button onClick={(e) => { e.stopPropagation(); setIsExpensePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
+        <button onClick={(e) => { e.stopPropagation(); setEditingPlanId(plan.id); setIsExpensePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
       </div>
       <div className={`relative bg-gray-50 p-4 space-y-2 border border-transparent transition-transform duration-300 z-10 ${swipedExpensePlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
@@ -349,7 +351,7 @@ const App = () => {
   return (
     <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedPlanId(swipedPlanId === plan.id ? null : plan.id)}>
       <div className="absolute inset-0 flex justify-end">
-        <button onClick={(e) => { e.stopPropagation(); setIsIncomePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
+        <button onClick={(e) => { e.stopPropagation(); setEditingPlanId(plan.id); setIsIncomePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
       </div>
       <div className={`relative bg-gray-50 p-4 flex justify-between items-center border border-transparent hover:border-gray-100 transition-transform duration-300 z-10 ${swipedPlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
@@ -475,27 +477,24 @@ const App = () => {
           <div className="w-full bg-white rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
             <button onClick={() => setIsExpensePlanModalOpen(false)} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
             <h2 className="text-lg font-bold mb-6">지출 계획 추가</h2>
-            <div className="space-y-4 mb-4">
-  {expensePlans.slice(-1).map(plan => (
+            <h2 className="text-lg font-bold mb-6">지출 계획 추가</h2>
+<div className="space-y-4 mb-4">
+  {expensePlans.filter(p => editingPlanId ? p.id === editingPlanId : expensePlans.indexOf(p) === expensePlans.length - 1).map(plan => (
     <div key={plan.id} className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100">
-      <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
-        {expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
+      <div className="space-y-1">
+        <label className="text-[9px] font-bold text-gray-400">항목</label>
+        <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
+          {expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <div className="space-y-1">
+        <label className="text-[9px] font-bold text-gray-400">통장 쪼개기</label>
+        <select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+          <option value="">선택안함</option>
+          {accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+        </select>
+      </div>
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <label className="text-[9px] font-bold text-gray-400">통장 쪼개기</label>
-          <select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
-            <option value="">선택안함</option>
-            {accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-[9px] font-bold text-gray-400">성격</label>
-          <select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
-            <option value="고정">고정</option>
-            <option value="변동">변동</option>
-          </select>
-        </div>
         <div className="space-y-1">
           <label className="text-[9px] font-bold text-gray-400">예산</label>
           <div className="flex items-center border rounded-lg overflow-hidden bg-white">
@@ -506,15 +505,25 @@ const App = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <label className="text-[9px] font-bold text-gray-400">비고</label>
-          <textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요" />
+          <label className="text-[9px] font-bold text-gray-400">성격</label>
+          <select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+            <option value="고정">고정</option>
+            <option value="변동">변동</option>
+          </select>
         </div>
+      </div>
+      <div className="space-y-1">
+        <label className="text-[9px] font-bold text-gray-400">비고</label>
+        <textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요" />
       </div>
     </div>
   ))}
 </div>
-      <div className="flex gap-3"><button onClick={() => setIsIncomePlanModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button><button onClick={handleSavePlans} className="flex-1 py-4 bg-green-600 text-white rounded-2xl font-bold shadow-lg">저장</button></div>
-      {showPlanSaveMsg && <div className="mt-4 text-center text-green-600 font-black text-2xl animate-bounce">저장 완료</div>}
+<div className="flex gap-3">
+  <button onClick={() => setIsExpensePlanModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button>
+  <button onClick={() => { handleSavePlans(); setTimeout(() => setIsExpensePlanModalOpen(false), 1500); }} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">저장</button>
+</div>
+{showPlanSaveMsg && <div className="mt-4 text-center text-blue-600 font-black text-2xl animate-bounce">저장 완료</div>}
     </div>
   </div>
 )}
