@@ -273,7 +273,14 @@ const App = () => {
                 {Object.keys(multiCurrencyTotals).length === 0 ? (
                   <div className="text-3xl font-bold text-blue-400">₩0</div>
                 ) : (
-                  Object.entries(multiCurrencyTotals).map(([unit, val]) => (
+                  Object.entries(multiCurrencyTotals)
+                    .sort(([unitA], [unitB]) => {
+                      const order = ['KRW', 'USD', 'JPY', 'EUR', 'CNY', 'Gold', '비트코인', '이더리움', '스테이블코인'];
+                      const idxA = order.indexOf(unitA);
+                      const idxB = order.indexOf(unitB);
+                      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+  })
+  .map(([unit, val]) => (
                     <div key={unit} className="flex justify-between items-baseline border-b border-white/10 pb-1 last:border-0 last:pb-0">
                       <span className="text-[10px] text-gray-500 font-bold uppercase">{unit}</span>
                       <div className="text-xl font-bold">{formatValue(val, unit)}</div>
@@ -449,8 +456,7 @@ const App = () => {
             <h2 className="text-lg font-bold mb-6">지출 계획 설정</h2>
             <div className="overflow-x-auto border rounded-xl overflow-hidden mb-6">
               <table className="w-full text-[11px] table-fixed min-w-[550px]">
-                <thead className="bg-gray-50 border-b"><tr className="text-gray-400 text-[10px]"><th className="py-3 text-left w-[20%] pl-3">항목</th><th className="py-3 text-right w-[20%]">예산</th><th className="py-3 text-center w-[20%]">성격</th><th className="py-3 text-left w-[20%]">비고</th><th className="py-3 text-left w-[20%]">통장 쪼개기</th><th className="w-8"></th></tr></thead>
-                <tbody className="divide-y">
+              <th className="py-3 text-left w-[25%] pl-3">항목</th><th className="py-3 text-left w-[25%]">통장 쪼개기</th><th className="py-3 text-right w-[15%]">예산</th><th className="py-3 text-center w-[15%]">성격</th><th className="py-3 text-left w-[20%]">비고</th>                <tbody className="divide-y">
                   {expensePlans.map(plan => {
                     const isCustomMode = plan.category === "기타 (직접 입력)" || !DEFAULT_EXPENSE_LIST.includes(plan.category);
                     return (
@@ -486,11 +492,12 @@ const App = () => {
                     const isCustomMode = plan.category === "기타 (직접 입력)" || !DEFAULT_INCOME_LIST.includes(plan.category);
                     return (
                       <tr key={plan.id}>
-                        <td className="py-2 pl-2">{isCustomMode ? <div className="relative"><input autoFocus type="text" value={plan.category === "기타 (직접 입력)" ? "" : plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-green-50 rounded p-1 font-bold outline-none border border-green-200" placeholder="입력" /><button onClick={() => updateDoc(doc(db, userPath, 'plans', plan.id), { category: "월급" })} className="absolute -right-1 -top-1 bg-white rounded-full shadow-sm"><X size={10} /></button></div> : <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-transparent outline-none font-bold truncate">{incomeCategoryList.map(c => <option key={c} value={c}>{c}</option>)}</select>}</td>
-                        <td className="py-2"><div className="flex flex-col items-end pr-2"><input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0 })} className="w-full bg-white rounded px-1 text-right font-bold outline-none border" placeholder="0"/><select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[8px] bg-transparent outline-none text-green-600 font-bold border-none">{CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}</select></div></td>
-                        <td className="py-2 px-1"><select value={plan.targetType || '고정'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { targetType: e.target.value })} className="w-full bg-white outline-none text-center font-bold border rounded p-1"><option value="고정">고정</option><option value="변동">변동</option></select></td>
-                        <td className="py-2 px-1"><textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded p-1 outline-none resize-none text-[10px] border" placeholder="입력" /></td>
-                        <td className="py-2 text-center pr-1"><button onClick={() => deleteDoc(doc(db, userPath, 'plans', plan.id))} className="text-red-400"><Trash2 size={12}/></button></td>
+                        <td className="py-2 pl-2">{isCustomMode ? <div className="relative"><input autoFocus type="text" value={plan.category === "기타 (직접 입력)" ? "" : plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-blue-50 rounded p-1 font-bold outline-none border border-blue-200" placeholder="입력" /><button onClick={() => updateDoc(doc(db, userPath, 'plans', plan.id), { category: "식비" })} className="absolute -right-1 -top-1 bg-white rounded-full shadow-sm"><X size={10} /></button></div> : <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-transparent outline-none font-bold truncate">{expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}</select>}</td>
+<td className="py-2 px-1"><select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none truncate border rounded p-1"><option value="">선택안함</option>{accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}</select></td>
+<td className="py-2"><div className="flex flex-col items-end pr-2"><input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0 })} className="w-full bg-white rounded px-1 text-right font-bold outline-none border" placeholder="0"/><select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[8px] bg-transparent outline-none text-blue-600 font-bold border-none">{CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}</select></div></td>
+<td className="py-2 px-1"><select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none text-center font-bold border rounded p-1"><option value="고정">고정</option><option value="변동">변동</option></select></td>
+<td className="py-2 px-1"><textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded p-1 outline-none resize-none text-[10px] border" placeholder="입력" /></td>
+<td className="py-2 text-center"><button onClick={() => deleteDoc(doc(db, userPath, 'plans', plan.id))} className="text-red-400 hover:scale-110 transition-transform"><Trash2 size={12}/></button></td>
                       </tr>
                     );
                   })}
@@ -627,6 +634,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
           <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">자산 선택</label><select value={tx.accountId} onChange={e => setTx({...tx, accountId: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-1 ring-blue-500 cursor-pointer"><option value="">선택하세요</option>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({formatValue(acc.balance, acc.currency)})</option>)}</select></div>
           <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-1 ring-blue-500 cursor-pointer" />
         </div>
+        <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">메모</label><textarea value={tx.memo || ''} onChange={e => setTx({...tx, memo: e.target.value})} placeholder="메모를 입력하세요" rows={2} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border resize-none" /></div>
         <button onClick={() => onSubmit({...tx, manager: isCustomMgr ? tx.customManager : tx.manager})} className={`w-full py-4 rounded-2xl text-white font-bold shadow-xl active:scale-95 transition-all ${tx.type==='expense'?'bg-blue-600':'bg-indigo-600'}`}>{buttonLabel}</button>
       </div>
     </div>
