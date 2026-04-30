@@ -225,11 +225,16 @@ const App = () => {
   const handleAddTransaction = async (txData) => {
     if (!userPath) return;
     const amount = parseInt(txData.amount) || 0;
-    if (txData.id) { await updateDoc(doc(db, userPath, 'transactions', txData.id), { ...txData, amount }); setIsTransactionEditModalOpen(false); }
-    else {
+    if (txData.id) {
+      await updateDoc(doc(db, userPath, 'transactions', txData.id), { ...txData, amount });
+      setIsTransactionEditModalOpen(false);
+    } else {
       await addDoc(collection(db, userPath, 'transactions'), { ...txData, amount });
       const targetAcc = accounts.find(a => a.id === txData.accountId);
-      if (targetAcc) { await updateDoc(doc(db, userPath, 'accounts', targetAcc.id), { balance: targetAcc.balance + (txData.type === 'expense' ? -amount : amount) }); }
+      if (targetAcc) {
+        const newBalance = (Number(targetAcc.balance) || 0) + (txData.type === 'expense' ? -amount : amount);
+        await updateDoc(doc(db, userPath, 'accounts', targetAcc.id), { balance: newBalance, currency: txData.currency });
+      }
       setActiveTab('dashboard');
     }
   };
@@ -281,9 +286,8 @@ const App = () => {
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-red-500 font-bold"><ArrowDownCircle size={14}/><span>월 지출액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlySpent)}</div></div>
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-blue-500 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
             </div>
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-blue-500 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
-              <div className="space-y-4">
+            <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-blue-500 transition-colors">전체보기 <ChevronRight size={12}/></button></div>              <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
                     <div className="flex items-center gap-3"><div className={`p-1.5 rounded-full ${tx.type==='expense'?'bg-red-50 text-red-400':'bg-blue-50 text-blue-400'}`}><ArrowDownCircle size={14}/></div><div><p className="font-bold">{tx.category}</p><p className="text-[10px] text-gray-400 font-bold">{tx.date} {tx.manager ? `• ${tx.manager}` : ''}</p></div></div>
@@ -596,7 +600,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
     <div className="space-y-6 text-left pb-4">
       <h2 className="text-lg font-bold px-2 flex items-center gap-2"><PlusCircle size={20} className="text-blue-600" /> {title}</h2>
       <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 space-y-6">
-        <div className="flex p-1 bg-gray-100 rounded-2xl shadow-inner">
+        <div className="flex gap-2">
           <button onClick={() => setTx({...tx, type: 'expense'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'expense' ? 'bg-white text-red-500 shadow-sm' : 'text-gray-500'}`}>지출</button>
           <button onClick={() => setTx({...tx, type: 'income'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'income' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-500'}`}>수입</button>
         </div>
@@ -632,7 +636,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
 const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   const active = activeTab === id;
   return (
-    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors rounded-none ${active ? 'bg-blue-50 text-gray-400' : 'text-gray-400 hover:bg-gray-50'}`}>
+    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors rounded-none ${active ? 'bg-blue-500 text-gray-400' : 'text-gray-400 hover:bg-gray-50'}`}>
       <Icon size={24} />
       <span className="text-[10px] mt-1 font-bold">{label}</span>
     </button>
