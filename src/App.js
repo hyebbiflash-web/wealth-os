@@ -89,46 +89,58 @@ const AuthScreen = () => {
   const [error, setError] = useState('');
   const [autoLogin, setAutoLogin] = useState(() => localStorage.getItem('autoLogin') === 'true');
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    if (autoLogin) { handleGoogleLogin(); }
-  }, []);
-
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = useCallback(async () => {
     setLoading(true); setError('');
     try { await signInWithPopup(auth, googleProvider); }
     catch (err) { setError('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.'); setAutoLogin(false); localStorage.setItem('autoLogin', 'false'); console.error(err); }
     finally { setLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (autoLogin) { handleGoogleLogin(); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleAutoLogin = () => { const next = !autoLogin; setAutoLogin(next); localStorage.setItem('autoLogin', String(next)); };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-6">
       <div className="w-full max-w-sm bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center">
-        <div className="mb-10">
-          <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100"><ShieldCheck className="text-white" size={40} /></div>
-          <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Wealth os</h1>
-          <p className="text-sm text-gray-400 font-bold mt-2">자산 관리 시스템</p>
-        </div>
-        <div className="space-y-6">
-          <p className="text-sm font-bold text-gray-500 leading-relaxed">자산 관리를 시작하기 위해<br/>구글 계정으로 로그인해주세요.</p>
-          <div className="space-y-3">
-            <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
-              {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
-            </button>
-            <button onClick={toggleAutoLogin} className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-gray-400 hover:text-blue-500 transition-colors">
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>{autoLogin && <span className="text-white text-xs">✓</span>}</div>
-              자동 로그인
-            </button>
+        <div className="mb-8">
+          <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100">
+            <ShieldCheck className="text-white" size={40} />
           </div>
-          {error && <p className="text-red-500 text-[11px] font-bold mt-4">{error}</p>}
+          <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Wealth os</h1>
+          <p className="text-sm text-gray-400 font-bold mt-1">자산 관리 시스템</p>
+          <p className="text-base font-bold text-gray-600 mt-4">똑부러지게 자산 관리를 시작해봐요!</p>
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-50">
-          <button onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} className="text-sm text-gray-400 font-bold hover:text-red-400 transition-colors">탈퇴하기</button>
+        <div className="space-y-3 mb-5">
+          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 border-2 border-blue-600 rounded-2xl font-bold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-100">
+            {loading ? <Loader2 className="animate-spin text-white" size={20}/> : <><GoogleIcon white/><span>구글 계정으로 로그인</span></>}
+          </button>
+          <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex items-center justify-center gap-3 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
+            {loading ? <Loader2 className="animate-spin text-gray-400" size={20}/> : <><GoogleIcon/><span>구글 계정으로 가입하기</span></>}
+          </button>
+        </div>
+        <div className="flex justify-center mt-4 mb-4">
+  <button onClick={toggleAutoLogin} style={{background:'none', border:'none', outline:'none', boxShadow:'none', padding:0}} className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-blue-500 transition-colors">
+  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${autoLogin ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'}`}>
+  {autoLogin && <span className="text-white text-[10px]">✓</span>}
+</div>
+    자동 로그인
+  </button>
+</div>
+        {error && <p className="text-red-500 text-[11px] font-bold mb-4">{error}</p>}
+        <div className="mt-4 pt-6 border-t border-gray-100">
+        <button 
+  onClick={() => { if(window.confirm('회원 탈퇴를 진행하시겠습니까? 로그인 후 가능합니다.')) {} }} 
+  className="text-xs text-gray-400 font-bold hover:text-red-400 transition-colors bg-none border-none outline-none shadow-none"
+  style={{ background: 'none', border: 'none', padding: 0 }}
+>
+  탈퇴하기
+</button>
         </div>
       </div>
-      <p className="mt-8 text-[9px] text-gray-300 font-black uppercase tracking-[0.4em]">System Stable V5.0</p>
+      <p className="mt-8 text-[9px] text-gray-300 font-black uppercase tracking-[0.4em]">Hobang bbu v1.0</p>
     </div>
   );
 };
@@ -361,9 +373,9 @@ const App = () => {
         {activeTab === 'history' && (
           <div className="space-y-6 relative text-left">
             <div className="flex justify-between items-center px-2 mb-2"><h2 className="text-lg font-bold flex items-center gap-2"><History size={20} /> 전체 이용 내역</h2><div className="flex gap-1.5 overflow-x-auto pb-1">
-              <button onClick={() => setIsAssetFilterOpen(!isAssetFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-2 py-1 rounded-md text-[13px] font-bold ${historyAssetFilter !== 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><Filter size={12} /> 자산</button>
-              <button onClick={() => setIsDateFilterOpen(!isDateFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-2 py-1 rounded-md text-[13px] font-bold ${historyStartDate || historyEndDate ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><Calendar size={12} /> 기간</button>
-              <button onClick={() => setIsManagerFilterOpen(!isManagerFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-2 py-1 rounded-md text-[13px] font-bold ${Object.values(managerFilter).some(v => v !== 'all') ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><UserCheck size={12} /> 담당</button>
+              <button onClick={() => setIsAssetFilterOpen(!isAssetFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-3 py-1.5 rounded-xl text-[13px] font-bold shadow-sm ${historyAssetFilter !== 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><Filter size={12} /> 자산</button>
+              <button onClick={() => setIsDateFilterOpen(!isDateFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-3 py-1.5 rounded-xl text-[13px] font-bold shadow-sm ${historyStartDate || historyEndDate ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><Calendar size={12} /> 기간</button>
+              <button onClick={() => setIsManagerFilterOpen(!isManagerFilterOpen)} className={`whitespace-nowrap flex items-center gap-1 px-3 py-1.5 rounded-xl text-[13px] font-bold shadow-sm ${Object.values(managerFilter).some(v => v !== 'all') ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}><UserCheck size={12} /> 담당</button>
             </div></div>
             {isAssetFilterOpen && (<div className="absolute top-12 left-0 right-0 mx-4 bg-white border shadow-2xl rounded-2xl p-4 z-40"><div className="flex justify-between items-center mb-3"><p className="text-[10px] font-bold text-gray-400 uppercase">자산 필터</p><button onClick={() => setIsAssetFilterOpen(false)}><X size={16} className="text-gray-400" /></button></div><div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"><button onClick={() => {setHistoryAssetFilter('all'); setIsAssetFilterOpen(false);}} className={`text-left text-xs font-bold p-3 rounded-xl ${historyAssetFilter === 'all' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-50 border border-transparent'}`}>전체 자산</button>{accounts.map(a => <button key={a.id} onClick={() => {setHistoryAssetFilter(a.id); setIsAssetFilterOpen(false);}} className={`text-left text-xs font-bold p-3 rounded-xl truncate ${historyAssetFilter === a.id ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-50 border border-transparent'}`}>{a.name}</button>)}</div></div>)}
             {isDateFilterOpen && (<div className="absolute top-12 left-0 right-0 mx-4 bg-white border shadow-2xl rounded-2xl p-5 z-40"><div className="flex justify-between items-center mb-4"><p className="text-[10px] font-bold text-gray-400 uppercase">기간 필터</p><button onClick={() => setIsDateFilterOpen(false)}><X size={16} className="text-gray-400" /></button></div><div className="space-y-4"><div className="space-y-1"><label className="text-[9px] font-bold text-gray-400 ml-1">시작일</label><input type="date" value={historyStartDate} onChange={e => setHistoryStartDate(e.target.value)} className="w-full p-3 bg-gray-50 rounded-xl text-xs outline-none border focus:border-blue-500" /></div><div className="space-y-1"><label className="text-[9px] font-bold text-gray-400 ml-1">종료일</label><input type="date" value={historyEndDate} onChange={e => setHistoryEndDate(e.target.value)} className="w-full p-3 bg-gray-50 rounded-xl text-xs outline-none border focus:border-blue-500" /></div></div><div className="flex gap-2 mt-6"><button onClick={() => {setHistoryStartDate(''); setHistoryEndDate(''); setIsDateFilterOpen(false);}} className="flex-1 py-3 bg-gray-100 rounded-xl text-xs font-bold text-gray-500">초기화</button><button onClick={() => setIsDateFilterOpen(false)} className="flex-1 py-3 bg-blue-600 rounded-xl text-xs font-bold text-white shadow-lg shadow-blue-100">확인</button></div></div>)}
@@ -584,12 +596,12 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
     <div className="space-y-6 text-left pb-4">
       <h2 className="text-lg font-bold px-2 flex items-center gap-2"><PlusCircle size={20} className="text-blue-600" /> {title}</h2>
       <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 space-y-6">
-        <div className="flex p-1 bg-gray-100 rounded-xl">
+        <div className="flex p-1 bg-gray-100 rounded-2xl shadow-inner">
           <button onClick={() => setTx({...tx, type: 'expense'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'expense' ? 'bg-white text-red-500 shadow-sm' : 'text-gray-500'}`}>지출</button>
           <button onClick={() => setTx({...tx, type: 'income'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'income' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-500'}`}>수입</button>
         </div>
         <div className="space-y-4">
-          <div className="flex gap-2 border-b-2 items-center py-2 focus-within:border-blue-500 transition-colors" style={{overflow: 'hidden'}}>
+          <div className="flex gap-2 items-center py-3 px-3 bg-white rounded-2xl shadow-sm border-0">
             <select value={tx.currency} onChange={e => setTx({...tx, currency: e.target.value})} className="bg-gray-100 p-1 rounded font-bold text-xs outline-none cursor-pointer" style={{flexShrink: 0}}>
               {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
             </select>
