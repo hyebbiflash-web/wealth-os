@@ -170,6 +170,7 @@ const App = () => {
   const [swipedAccountId, setSwipedAccountId] = useState(null);
   const [swipedTxId, setSwipedTxId] = useState(null);
   const [showPlanSaveMsg, setShowPlanSaveMsg] = useState(false);
+  const [swipedExpensePlanId, setSwipedExpensePlanId] = useState(null);
   const [customManagers, setCustomManagers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('customManagers') || '[]'); } catch { return []; }
   });
@@ -310,42 +311,62 @@ const App = () => {
             <div className="flex justify-between items-center px-2"><h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 계획</h2></div>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-                <h3 className="text-m font-bold text-gray-400 tracking-wide">지출 계획</h3>
-                <button onClick={() => setIsExpensePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button>
+                <h3 className="text-sm font-bold text-gray-400 tracking-wide">지출 계획</h3>
+                <button onClick={async () => { await addDoc(collection(db, userPath, 'plans'), { type: 'expense', category: '식비', budget: 0, currency: 'KRW', nature: '변동', remarks: '', accountSplit: '' }); setIsExpensePlanModalOpen(true); }} className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-md hover:scale-110 transition-all"><Plus size={16}/></button>
               </div>
               <div className="space-y-3">
-                {expensePlans.map(plan => {
-                  const spent = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
-                  const progress = Math.min((spent / (plan.budget || 1)) * 100, 100);
-                  const isOver = spent > plan.budget;
-                  return (
-                    <div key={plan.id} className="space-y-2 p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-gray-100 transition-all">
-                      <div className="flex justify-between text-[11px] font-bold px-1">
-                        <div className="flex items-center gap-2"><span className="text-gray-800">{plan.category}</span>{plan.nature === '고정' && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">FIXED</span>}</div>
-                        <div className="flex items-center gap-1.5"><span className={isOver ? "text-red-500" : "text-blue-600"}>{formatValue(spent, plan.currency)}</span><span className="text-gray-300 font-normal">/</span><span className="text-gray-400">{formatValue(plan.budget, plan.currency)}</span></div>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className={`h-full transition-all duration-1000 ease-out ${isOver ? 'bg-red-400' : 'bg-blue-500'}`} style={{width: `${progress}%`}}></div></div>
-                    </div>
-                  );
-                })}
+              {expensePlans.map(plan => {
+  const spent = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
+  const progress = Math.min((spent / (plan.budget || 1)) * 100, 100);
+  const isOver = spent > plan.budget;
+  return (
+    <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedExpensePlanId(swipedExpensePlanId === plan.id ? null : plan.id)}>
+      <div className="absolute inset-0 flex justify-end">
+        <button onClick={(e) => { e.stopPropagation(); setIsExpensePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
+        <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
+      </div>
+      <div className={`relative bg-gray-50 p-4 space-y-2 border border-transparent transition-transform duration-300 z-10 ${swipedExpensePlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
+        <div className="flex justify-between text-[11px] font-bold px-1">
+          <div className="flex items-center gap-2"><span className="text-gray-800">{plan.category}</span>{plan.nature === '고정' && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">FIXED</span>}</div>
+          <div className="flex items-center gap-1.5"><span className={isOver ? "text-red-500" : "text-blue-600"}>{formatValue(spent, plan.currency)}</span><span className="text-gray-300 font-normal">/</span><span className="text-gray-400">{formatValue(plan.budget, plan.currency)}</span></div>
+        </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className={`h-full transition-all duration-1000 ease-out ${isOver ? 'bg-red-400' : 'bg-blue-500'}`} style={{width: `${progress}%`}}></div></div>
+      </div>
+    </div>
+  );
+})}
               </div>
             </section>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-                <h3 className="text-m font-bold text-gray-400 tracking-wide">수입 계획</h3>
-                <button onClick={() => setIsIncomePlanModalOpen(true)} className="text-gray-400 hover:text-blue-500 transition-all p-1 bg-gray-50 rounded-full"><Settings size={14}/></button>
+                <h3 className="text-sm font-bold text-gray-400 tracking-wide">수입 계획</h3>
+                <button onClick={async () => { await addDoc(collection(db, userPath, 'plans'), { type: 'income', category: '월급', budget: 0, currency: 'KRW', targetAmount: 0, targetCurrency: 'KRW', nature: '고정', remarks: '', accountSplit: '' }); setIsIncomePlanModalOpen(true); }} className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-md hover:scale-110 transition-all"><Plus size={16}/></button>
               </div>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-4 mb-4">
                 {incomePlans.map(plan => {
-                  const actual = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
-                  const isSuccess = actual >= plan.budget;
-                  return (
-                    <div key={plan.id} className="p-4 bg-gray-50 rounded-2xl flex justify-between items-center border border-transparent hover:border-gray-100 transition-all">
-                      <div><span className="text-[11px] font-bold text-gray-800">{plan.category}</span><p className="text-[9px] text-gray-400 mt-0.5 font-bold">목표: {formatValue(plan.budget, plan.currency)}</p></div>
-                      <div className="text-right"><p className={`text-sm font-bold ${isSuccess ? 'text-blue-600' : 'text-gray-400'}`}>{formatValue(actual, plan.currency)}</p>{isSuccess && <span className="text-[8px] text-blue-400 font-bold uppercase tracking-tighter">SUCCESS</span>}</div>
-                    </div>
-                  );
-                })}
+  const actual = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
+  const isSuccess = actual >= plan.budget;
+  return (
+    <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedPlanId(swipedPlanId === plan.id ? null : plan.id)}>
+      <div className="absolute inset-0 flex justify-end">
+        <button onClick={(e) => { e.stopPropagation(); setIsIncomePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
+        <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
+      </div>
+      <div className={`relative bg-gray-50 p-4 flex justify-between items-center border border-transparent hover:border-gray-100 transition-transform duration-300 z-10 ${swipedPlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
+        <div>
+          <span className="text-[11px] font-bold text-gray-800">{plan.category}</span>
+          {plan.nature && <span className="ml-2 text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">{plan.nature}</span>}
+          <p className="text-[9px] text-gray-400 mt-0.5 font-bold">예상: {formatValue(plan.budget, plan.currency)}</p>
+          {plan.accountSplit && <p className="text-[9px] text-gray-400 font-bold">통장: {plan.accountSplit}</p>}
+        </div>
+        <div className="text-right">
+          <p className={`text-sm font-bold ${isSuccess ? 'text-blue-600' : 'text-gray-400'}`}>{formatValue(actual, plan.currency)}</p>
+          {isSuccess && <span className="text-[8px] text-blue-400 font-bold uppercase tracking-tighter">SUCCESS</span>}
+        </div>
+      </div>
+    </div>
+  );
+})}
               </div>
             </section>
           </div>
@@ -371,7 +392,7 @@ const App = () => {
                         </div>
                         <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 cursor-pointer ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`} onClick={() => setSwipedAccountId(swipedAccountId === acc.id ? null : acc.id)}>
                           <div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-blue-50 text-blue-500"><PiggyBank size={18}/></div><div className="flex flex-col"><span className="text-sm font-bold text-gray-800">{acc.name}</span><span className="text-[10px] text-gray-400 font-bold uppercase">{acc.provider}</span></div></div>
-                          <span className="text-sm font-bold">{formatValue(acc.balance, acc.currency)}</span>
+                          <span className={`text-sm font-bold ${acc.category === '부채' ? 'text-red-500' : ''}`}>{acc.category === '부채' ? formatValue(-Math.abs(acc.balance), acc.currency) : formatValue(acc.balance, acc.currency)}</span>
                         </div>
                       </div>
                     ))}
@@ -453,63 +474,50 @@ const App = () => {
         <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="w-full bg-white rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
             <button onClick={() => setIsExpensePlanModalOpen(false)} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
-            <h2 className="text-lg font-bold mb-6">지출 계획 설정</h2>
-            <div className="overflow-x-auto border rounded-xl overflow-hidden mb-6">
-              <table className="w-full text-[11px] table-fixed min-w-[550px]">
-              <th className="py-3 text-left w-[25%] pl-3">항목</th><th className="py-3 text-left w-[25%]">통장 쪼개기</th><th className="py-3 text-right w-[15%]">예산</th><th className="py-3 text-center w-[15%]">성격</th><th className="py-3 text-left w-[20%]">비고</th>                <tbody className="divide-y">
-                  {expensePlans.map(plan => {
-                    const isCustomMode = plan.category === "기타 (직접 입력)" || !DEFAULT_EXPENSE_LIST.includes(plan.category);
-                    return (
-                      <tr key={plan.id} className="hover:bg-gray-50/50">
-                        <td className="py-2 pl-2">{isCustomMode ? <div className="relative"><input autoFocus type="text" value={plan.category === "기타 (직접 입력)" ? "" : plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-blue-50 rounded p-1 font-bold outline-none border border-blue-200" placeholder="입력" /><button onClick={() => updateDoc(doc(db, userPath, 'plans', plan.id), { category: "식비" })} className="absolute -right-1 -top-1 bg-white rounded-full shadow-sm"><X size={10} /></button></div> : <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-transparent outline-none font-bold truncate">{expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}</select>}</td>
-                        <td className="py-2"><div className="flex flex-col items-end pr-2"><input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0 })} className="w-full bg-white rounded px-1 text-right font-bold outline-none border" placeholder="0"/><select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[8px] bg-transparent outline-none text-blue-600 font-bold border-none">{CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}</select></div></td>
-                        <td className="py-2 px-1"><select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none text-center font-bold border rounded p-1"><option value="고정">고정</option><option value="변동">변동</option></select></td>
-                        <td className="py-2 px-1"><textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded p-1 outline-none resize-none text-[10px] border" placeholder="입력" /></td>
-                        <td className="py-2 px-1"><select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none truncate border rounded p-1"><option value="">선택안함</option>{accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}</select></td>
-                        <td className="py-2 text-center"><button onClick={() => deleteDoc(doc(db, userPath, 'plans', plan.id))} className="text-red-400 hover:scale-110 transition-transform"><Trash2 size={12}/></button></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <button onClick={() => addDoc(collection(db, userPath, 'plans'), { type: 'expense', category: '식비', budget: 0, currency: 'KRW', nature: '변동', remarks: '', accountSplit: '' })} className="w-full py-3 mb-6 border-2 border-dashed rounded-xl text-gray-400 font-bold text-xs hover:text-blue-500 hover:border-blue-500 transition-all">+ 지출 항목 추가</button>
-            <div className="flex gap-3"><button onClick={() => setIsExpensePlanModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button><button onClick={handleSavePlans} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">저장</button></div>
-            {showPlanSaveMsg && <div className="mt-4 text-center text-blue-600 font-black text-2xl animate-bounce">저장 완료</div>}
+            <h2 className="text-lg font-bold mb-6">지출 계획 추가</h2>
+            <div className="space-y-4 mb-4">
+  {expensePlans.slice(-1).map(plan => (
+    <div key={plan.id} className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100">
+      <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
+        {expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-gray-400">통장 쪼개기</label>
+          <select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+            <option value="">선택안함</option>
+            {accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-gray-400">성격</label>
+          <select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+            <option value="고정">고정</option>
+            <option value="변동">변동</option>
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-gray-400">예산</label>
+          <div className="flex items-center border rounded-lg overflow-hidden bg-white">
+            <select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[9px] bg-gray-50 outline-none font-bold border-r px-1 py-2">
+              {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
+            </select>
+            <input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0 })} className="flex-1 px-2 py-2 text-right font-bold text-xs outline-none" placeholder="0"/>
           </div>
         </div>
-      )}
-      {isIncomePlanModalOpen && (
-        <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="w-full bg-white rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
-            <button onClick={() => setIsIncomePlanModalOpen(false)} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
-            <h2 className="text-lg font-bold mb-6">수입 계획 설정</h2>
-            <div className="overflow-x-auto border rounded-xl overflow-hidden mb-6">
-              <table className="w-full text-[11px] table-fixed min-w-[500px]">
-                <thead className="bg-gray-50 border-b"><tr className="text-gray-400 text-[10px]"><th className="py-3 text-left w-[25%] pl-3">항목</th><th className="py-3 text-right w-[25%]">예상 금액</th><th className="py-3 text-center w-[25%]">목표 금액</th><th className="py-3 text-left w-[25%] pr-3">비고</th><th className="w-10"></th></tr></thead>
-                <tbody className="divide-y">
-                  {incomePlans.map(plan => {
-                    const isCustomMode = plan.category === "기타 (직접 입력)" || !DEFAULT_INCOME_LIST.includes(plan.category);
-                    return (
-                      <tr key={plan.id}>
-                        <td className="py-2 pl-2">{isCustomMode ? <div className="relative"><input autoFocus type="text" value={plan.category === "기타 (직접 입력)" ? "" : plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-blue-50 rounded p-1 font-bold outline-none border border-blue-200" placeholder="입력" /><button onClick={() => updateDoc(doc(db, userPath, 'plans', plan.id), { category: "식비" })} className="absolute -right-1 -top-1 bg-white rounded-full shadow-sm"><X size={10} /></button></div> : <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full bg-transparent outline-none font-bold truncate">{expenseCategoryList.map(c => <option key={c} value={c}>{c}</option>)}</select>}</td>
-<td className="py-2 px-1"><select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none truncate border rounded p-1"><option value="">선택안함</option>{accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}</select></td>
-<td className="py-2"><div className="flex flex-col items-end pr-2"><input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0 })} className="w-full bg-white rounded px-1 text-right font-bold outline-none border" placeholder="0"/><select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[8px] bg-transparent outline-none text-blue-600 font-bold border-none">{CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}</select></div></td>
-<td className="py-2 px-1"><select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none text-center font-bold border rounded p-1"><option value="고정">고정</option><option value="변동">변동</option></select></td>
-<td className="py-2 px-1"><textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded p-1 outline-none resize-none text-[10px] border" placeholder="입력" /></td>
-<td className="py-2 text-center"><button onClick={() => deleteDoc(doc(db, userPath, 'plans', plan.id))} className="text-red-400 hover:scale-110 transition-transform"><Trash2 size={12}/></button></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <button onClick={() => addDoc(collection(db, userPath, 'plans'), { type: 'income', category: '월급', budget: 0, currency: 'KRW', targetType: '고정', remarks: '' })} className="w-full py-3 mb-6 border-2 border-dashed rounded-xl text-gray-400 font-bold text-xs hover:text-green-500 hover:border-green-500 transition-all">+ 수입 항목 추가</button>
-            <div className="flex gap-3"><button onClick={() => setIsIncomePlanModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button><button onClick={handleSavePlans} className="flex-1 py-4 bg-green-600 text-white rounded-2xl font-bold shadow-lg">저장</button></div>
-            {showPlanSaveMsg && <div className="mt-4 text-center text-green-600 font-black text-2xl animate-bounce">저장 완료</div>}
-          </div>
+        <div className="space-y-1">
+          <label className="text-[9px] font-bold text-gray-400">비고</label>
+          <textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요" />
         </div>
-      )}
+      </div>
+    </div>
+  ))}
+</div>
+      <div className="flex gap-3"><button onClick={() => setIsIncomePlanModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button><button onClick={handleSavePlans} className="flex-1 py-4 bg-green-600 text-white rounded-2xl font-bold shadow-lg">저장</button></div>
+      {showPlanSaveMsg && <div className="mt-4 text-center text-green-600 font-black text-2xl animate-bounce">저장 완료</div>}
+    </div>
+  </div>
+)}
       {isAccountModalOpen && (
         <div className="absolute inset-0 bg-black/60 z-50 flex items-end"><div className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl"><div className="flex justify-between items-center mb-6 font-bold"><h2 className="text-lg">자산 추가/수정</h2><button onClick={() => setIsAccountModalOpen(false)} className="text-gray-400 hover:bg-gray-100 p-1 rounded-full"><X size={24}/></button></div><AccountModalInner onSave={handleSaveAccount} onCancel={() => setIsAccountModalOpen(false)} initialData={editingAccount} managerList={managerList} addCustomManager={addCustomManager} /></div></div>
       )}
@@ -558,7 +566,7 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
                 <button onClick={() => { setIsCustomCategory(false); setData({...data, category: '현금성'}); }} className="absolute right-2 top-4 text-blue-400"><X size={14}/></button>
               </div>
             ) : (
-              <select value={data.category} onChange={e => { if(e.target.value === '기타 (직접 입력)') { setIsCustomCategory(true); setData({...data, category: ''}); } else setData({...data, category: e.target.value}); }} className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-xs border shadow-sm focus:border-blue-500 appearance-none cursor-pointer">
+              <select value={data.category} onChange={e => { if(e.target.value === '기타 (직접 입력)') { setIsCustomCategory(true); setData({...data, category: ''}); } else { const newCat = e.target.value; setData({...data, category: newCat, balance: newCat === '부채' && data.balance > 0 ? -Math.abs(data.balance) : data.balance}); }}} className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-xs border shadow-sm focus:border-blue-500 appearance-none cursor-pointer">
                 {ASSET_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             )}
@@ -586,9 +594,8 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
             <select value={data.currency} onChange={e => setData({...data, currency: e.target.value})} className="bg-transparent font-bold text-xs outline-none border-r pr-1 border-gray-200 cursor-pointer ml-2">
               {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
             </select>
-            <input type="text" value={data.balance === 0 ? '' : data.balance.toLocaleString()} onChange={e => setData({...data, balance: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0})} className="flex-1 bg-transparent p-3 text-right font-bold text-blue-600 outline-none text-xs" placeholder="0"/>
+            <input type="text" value={data.balance === 0 ? '' : data.balance.toLocaleString()} onChange={e => setData({...data, balance: e.target.value.replace(/[^0-9-]/g, '') === '-' ? 0 : parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0})} className="flex-1 bg-transparent p-3 text-right font-bold text-blue-600 outline-none text-xs" placeholder="0"/>
           </div>
-          <p className="text-[9px] text-gray-400 mt-1.5 ml-1 leading-tight italic font-bold">💡 신용카드 사용액은 '부채'에 해당하므로, 금액 앞에 마이너스(-) 기호를 붙여 입력해 주세요.</p>
         </div>
       </div>
       <div className="flex gap-2 pt-4">
