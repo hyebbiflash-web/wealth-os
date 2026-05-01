@@ -134,7 +134,25 @@ const formatValue = (num, unit = 'KRW') => {
     default: return `${sign}${formatted} ${unit}`;
   }
 };
+const getPersonColorClass = (name, managerList = []) => {
+  if (name === '신랑') return 'bg-blue-100 text-gray-900';
+  if (name === '신부') return 'bg-pink-100 text-gray-900';
+  if (name === '부부') return 'bg-yellow-100 text-gray-900';
 
+  const colors = [
+    'bg-green-100 text-gray-900',
+    'bg-purple-100 text-gray-900',
+    'bg-orange-100 text-gray-900',
+    'bg-teal-100 text-gray-900',
+    'bg-red-100 text-gray-900',
+    'bg-indigo-100 text-gray-900',
+  ];
+
+  const extraPeople = managerList.filter(m => !['신랑', '신부', '부부'].includes(m));
+  const index = extraPeople.indexOf(name);
+
+  return colors[index % colors.length] || 'bg-gray-100 text-gray-900';
+};
 const GoogleIcon = ({ white }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     {white ? (
@@ -358,29 +376,7 @@ const App = () => {
     const fromTx = transactions.map(t => t.manager).filter(m => m);
     return Array.from(new Set(["신랑", "신부", ...customManagers, ...fromTx])).filter(m => m !== "기타 (직접 입력)");
   }, [transactions, customManagers]);
-  const getPersonColorClass = (name) => {
-    const fixedColors = {
-      '신랑': 'bg-blue-100 text-gray-900',
-      '신부': 'bg-pink-100 text-gray-900',
-      '부부': 'bg-yellow-100 text-gray-900',
-    };
   
-    if (fixedColors[name]) return fixedColors[name];
-  
-    const extraColors = [
-      'bg-green-100 text-gray-900',
-      'bg-purple-100 text-gray-900',
-      'bg-orange-100 text-gray-900',
-      'bg-teal-100 text-gray-900',
-      'bg-red-100 text-gray-900',
-      'bg-indigo-100 text-gray-900',
-    ];
-  
-    const extraPeople = managerList.filter(m => !['신랑', '신부', '부부'].includes(m));
-    const index = extraPeople.indexOf(name);
-  
-    return extraColors[index % extraColors.length] || 'bg-gray-100 text-gray-900';
-  };
 
   // 1. 추가 기능: 이 주머니는 추가할 때만 써요!
 const addCustomManager = (name) => {
@@ -529,7 +525,14 @@ const removeCustomManager = (name) => {
               <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-3"><div className={`p-1.5 rounded-full ${tx.type==='expense'?'bg-red-50 text-red-400':'bg-blue-50 text-blue-400'}`}><ArrowDownCircle size={14}/></div><div><p className="font-bold">{tx.category}</p><p className="text-[10px] text-gray-400 font-bold">{tx.date} {tx.manager ? `• ${tx.manager}` : ''}</p></div></div>
+                    <div className="flex items-center gap-3"><div className={`p-1.5 rounded-full ${tx.type==='expense'?'bg-red-50 text-red-400':'bg-blue-50 text-blue-400'}`}><ArrowDownCircle size={14}/></div><div><p className="font-bold">{tx.category}</p><div className="flex items-center gap-1 mt-0.5">
+  <span className="text-[10px] text-gray-400 font-bold">{tx.date}</span>
+  {tx.manager && (
+    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${getPersonColorClass(tx.manager, managerList)}`}>
+      {tx.manager}
+    </span>
+  )}
+</div></div></div>
                     <span className={`font-bold ${tx.type==='expense'?'text-red-500':'text-blue-500'}`}>{tx.type==='expense'?'-':'+'} {formatValue(tx.amount, tx.currency)}</span>
                   </div>
                 ))}
@@ -724,19 +727,19 @@ const removeCustomManager = (name) => {
   <div><label className="text-[9px] font-bold text-blue-500 mb-1 block">지출 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, expense: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense==='all'?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
     <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.expense===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
-    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+    {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-indigo-500 mb-1 block">수입 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, income: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income==='all'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
     <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.income===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
-    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+    {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-gray-600 mb-1 block">자산 소유자</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, asset: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset==='all'?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
     <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.asset===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
-    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+    {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('소유자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
 </div>
@@ -766,7 +769,14 @@ const removeCustomManager = (name) => {
                     <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'transactions', tx.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                   </div>
                   <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 ${swipedTxId === tx.id ? '-translate-x-32' : 'translate-x-0'}`}>
-                    <div className="flex items-center gap-3"><div className={`w-1 h-8 rounded-full ${tx.type === 'expense' ? 'bg-red-400' : 'bg-blue-400'}`} /><div><p className="text-sm font-bold">{tx.category}</p><p className="text-[10px] text-gray-400 font-bold">{tx.date} {tx.manager ? `• ${tx.manager}` : ''}</p></div></div>
+                    <div className="flex items-center gap-3"><div className={`w-1 h-8 rounded-full ${tx.type === 'expense' ? 'bg-red-400' : 'bg-blue-400'}`} /><div><p className="text-sm font-bold">{tx.category}</p><div className="flex items-center gap-1 mt-0.5">
+  <span className="text-[10px] text-gray-400 font-bold">{tx.date}</span>
+  {tx.manager && (
+    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${getPersonColorClass(tx.manager, managerList)}`}>
+      {tx.manager}
+    </span>
+  )}
+</div></div></div>
                     <span className={`text-sm font-bold ${tx.type === 'expense' ? 'text-red-500' : 'text-blue-600'}`}>{tx.type === 'expense' ? '-' : '+'} {formatValue(tx.amount, tx.currency)}</span>
                   </div>
                 </div>
@@ -800,7 +810,7 @@ const removeCustomManager = (name) => {
     <div className="w-full h-full bg-white rounded-t-3xl p-6 shadow-2xl mb-[env(safe-area-inset-bottom)]" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold">내역 상세 정보</h2>
-        <button onClick={() => setSelectedHistory(null)} className="text-gray-400 p-1"><X size={24}/></button>
+        <button onClick={() => setSelectedHistory(null)} className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center"><X size={24}/></button>
       </div>
       
       <div className="space-y-3 mb-8">
@@ -825,7 +835,13 @@ const removeCustomManager = (name) => {
         </div>
         <div className="flex justify-between py-2 border-b border-gray-50">
           <span className="text-xs font-bold text-gray-400">담당자</span>
-          <span className="text-sm font-bold">{selectedHistory.manager || '-'}</span>
+          {selectedHistory.manager ? (
+  <span className={`text-xs font-bold px-2 py-1 rounded-lg ${getPersonColorClass(selectedHistory.manager, managerList)}`}>
+    {selectedHistory.manager}
+  </span>
+) : (
+  <span className="text-sm font-bold">-</span>
+)}
         </div>
         <div className="flex justify-between py-2 border-b border-gray-50">
           <span className="text-xs font-bold text-gray-400">이용 자산</span>
