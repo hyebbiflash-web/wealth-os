@@ -134,24 +134,19 @@ const formatValue = (num, unit = 'KRW') => {
     default: return `${sign}${formatted} ${unit}`;
   }
 };
-const getPersonColorClass = (name, managerList = []) => {
-  if (name === '신랑') return 'bg-blue-100 text-gray-900';
-  if (name === '신부') return 'bg-pink-100 text-gray-900';
-  if (name === '부부') return 'bg-yellow-100 text-gray-900';
+const getPersonColorStyle = (name, managerList = []) => {
+  if (name === '신랑') return { backgroundColor: '#DBEAFE', color: '#111827' };
+  if (name === '신부') return { backgroundColor: '#FCE7F3', color: '#111827' };
+  if (name === '부부') return { backgroundColor: '#FEF3C7', color: '#111827' };
 
-  const colors = [
-    'bg-green-100 text-gray-900',
-    'bg-purple-100 text-gray-900',
-    'bg-orange-100 text-gray-900',
-    'bg-teal-100 text-gray-900',
-    'bg-red-100 text-gray-900',
-    'bg-indigo-100 text-gray-900',
-  ];
-
-  const extraPeople = managerList.filter(m => !['신랑', '신부', '부부'].includes(m));
+  const colors = ['#DCFCE7', '#F3E8FF', '#FFEDD5', '#CCFBF1', '#FEE2E2', '#E0E7FF'];
+  const extraPeople = managerList.filter(m => !['신랑','신부','부부'].includes(m));
   const index = extraPeople.indexOf(name);
 
-  return colors[index % colors.length] || 'bg-gray-100 text-gray-900';
+  return {
+    backgroundColor: colors[index % colors.length] || '#F3F4F6',
+    color: '#111827'
+  };
 };
 const GoogleIcon = ({ white }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -695,7 +690,10 @@ const removeCustomManager = (name) => {
   )}
                         <div className="flex items-center gap-3">
                         {acc.owner && (
-  <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap ${getPersonColorClass(acc.owner)}`}>
+  <span
+  style={getPersonColorStyle(acc.owner, managerList)}
+  className="text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap"
+>
     {acc.owner}
   </span>
 )}
