@@ -247,6 +247,7 @@ const App = () => {
   const [swipedPlanId, setSwipedPlanId] = useState(null);
   const [swipedExpensePlanId, setSwipedExpensePlanId] = useState(null);
   const [goalMemo, setGoalMemo] = useState(() => localStorage.getItem('goalMemo') || '');
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [customManagers, setCustomManagers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('customManagers') || '[]'); } catch { return []; }
@@ -381,14 +382,36 @@ const App = () => {
               </div>
             </div>
             <div className="bg-gray-900 p-6 rounded-3xl text-white shadow-xl">
-  <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">목표 설정</span>
-  <textarea
-    className="w-full mt-3 bg-transparent text-white text-sm font-bold outline-none resize-none placeholder-gray-600"
-    rows={3}
-    placeholder="목표를 입력하세요..."
-    value={goalMemo}
-    onChange={e => { setGoalMemo(e.target.value); localStorage.setItem('goalMemo', e.target.value); }}
-  />
+  <div className="flex justify-between items-center mb-3">
+    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">목표 설정</span>
+    <button
+      onClick={() => {
+        if (isEditingGoal) {
+          localStorage.setItem('goalMemo', goalMemo);
+          setIsEditingGoal(false);
+        } else {
+          setIsEditingGoal(true);
+        }
+      }}
+      className="text-xs font-bold px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+    >
+      {isEditingGoal ? '저장' : '수정'}
+    </button>
+  </div>
+  {isEditingGoal ? (
+    <textarea
+      autoFocus
+      className="w-full bg-transparent text-white text-sm font-bold outline-none resize-none placeholder-gray-600 border-b border-white/20 pb-1"
+      rows={3}
+      placeholder="목표를 입력하세요..."
+      value={goalMemo}
+      onChange={e => setGoalMemo(e.target.value)}
+    />
+  ) : (
+    <p className="text-sm font-bold text-white whitespace-pre-wrap min-h-[60px]">
+      {goalMemo || <span className="text-gray-600">수정 버튼을 눌러 목표를 입력하세요</span>}
+    </p>
+  )}
 </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-red-500 font-bold"><ArrowDownCircle size={14}/><span>월 지출액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlySpent)}</div></div>
