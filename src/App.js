@@ -393,7 +393,7 @@ const App = () => {
           setIsEditingGoal(true);
         }
       }}
-      className="text-[11px] font-bold px-3 py-1 rounded-lg bg-blue-600 text-gray-200 hover:bg-blue-700 transition-colors"
+      className="text-[11px] font-bold px-3 py-1 rounded-lg bg-gray-100 text-blue-600 hover:bg-gray-200 transition-colors"
     >
       {isEditingGoal ? '저장' : '수정'}
     </button>
