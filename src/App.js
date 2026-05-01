@@ -231,7 +231,7 @@ const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, co
   const [showSaveMsg, setShowSaveMsg] = useState(false);
 const [isCustomCategory, setIsCustomCategory] = useState(false);
 const plan = plans[plans.length - 1];
-const [remarksDraft, setRemarksDraft] = useState(plan?.remarks || '');
+const [remarksDraft, setRemarksDraft] = useState('');
 
 const handleSave = async () => {
   if (plan?.id) {
