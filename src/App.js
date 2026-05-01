@@ -227,22 +227,29 @@ const AuthScreen = () => {
   );
 };
 
-const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, color = 'blue' }) => {
+const PlanModal = ({ title, categoryList, accounts, userPath, onClose, color = 'blue' }) => {
   const [showSaveMsg, setShowSaveMsg] = useState(false);
-const [isCustomCategory, setIsCustomCategory] = useState(false);
-const plan = plans[plans.length - 1];
-const [remarksDraft, setRemarksDraft] = useState('');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [form, setForm] = useState({
+    category: categoryList[0] || '',
+    nature: color === 'green' ? '고정' : '변동',
+    accountSplit: '',
+    currency: 'KRW',
+    budget: 0,
+    targetCurrency: 'KRW',
+    targetAmount: 0,
+    remarks: '',
+  });
 
-const handleSave = async () => {
-  if (plan?.id) {
-    await updateDoc(doc(db, userPath, 'plans', plan.id), {
-      remarks: remarksDraft
+  const handleSave = async () => {
+    if (!userPath) return;
+    await addDoc(collection(db, userPath, 'plans'), {
+      type: color === 'green' ? 'income' : 'expense',
+      ...form,
     });
-  }
-
-  setShowSaveMsg(true);
-  setTimeout(() => { setShowSaveMsg(false); onClose(); }, 1500);
-};
+    setShowSaveMsg(true);
+    setTimeout(() => { setShowSaveMsg(false); onClose(); }, 1500);
+  };
 
   return (
     <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center p-4">
@@ -250,82 +257,62 @@ const handleSave = async () => {
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
         <h2 className="text-lg font-bold mb-6">{title}</h2>
         <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-4">
-  <div className="grid grid-cols-2 gap-2">
-  <div className="space-y-1">
-  <label className="text-[9px] font-bold text-gray-400">항목</label>
-  {isCustomCategory ? (
-    <div className="relative">
-      <input autoFocus type="text" placeholder="직접 입력하세요" onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-blue-50 outline-none border-2 border-blue-200 rounded-lg p-2"/>
-      <button onClick={() => setIsCustomCategory(false)} className="absolute right-2 top-2 text-blue-400"><X size={14}/></button>
-    </div>
-  ) : (
-    <select value={plan.category} onChange={e => { if(e.target.value === '기타 (직접 입력)') setIsCustomCategory(true); else updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value }); }} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
-      {categoryList.map(c => <option key={c} value={c}>{c}</option>)}
-    </select>
-  )}
-</div>
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">성격</label>
-      <select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
-        <option value="고정">고정</option>
-        <option value="변동">변동</option>
-      </select>
-    </div>
-  </div>
-  <div className="space-y-1">
-    <label className="text-[9px] font-bold text-gray-400">통장 쪼개기</label>
-    <select value={plan.accountSplit || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { accountSplit: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
-      <option value="">선택안함</option>
-      {accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
-    </select>
-  </div>
-  <div className="space-y-3">
-  <div className="space-y-1">
-    <label className="text-[9px] font-bold text-gray-400">{color === 'green' ? '예상 금액' : '예산'}</label>
-    <div className="flex items-center border rounded-lg overflow-hidden bg-white">
-      <select value={plan.currency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { currency: e.target.value })} className="text-[9px] bg-gray-50 outline-none font-bold border-r px-1 py-2">
-        {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
-      </select>
-      <input type="text" value={plan.budget === 0 ? '' : plan.budget.toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { budget: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0 })} className="flex-1 px-2 py-2 text-right font-bold text-xs outline-none" placeholder="0"/>
-    </div>
-  </div>
-  {color === 'green' && (
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">목표 금액</label>
-      <div className="flex items-center border rounded-lg overflow-hidden bg-white">
-        <select value={plan.targetCurrency || 'KRW'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { targetCurrency: e.target.value })} className="text-[9px] bg-gray-50 outline-none font-bold border-r px-1 py-2">
-          {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
-        </select>
-        <input type="text" value={(plan.targetAmount || 0) === 0 ? '' : (plan.targetAmount || 0).toLocaleString()} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { targetAmount: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0 })} className="flex-1 px-2 py-2 text-right font-bold text-xs outline-none" placeholder="0"/>
-      </div>
-    </div>
-  )}
-  {color !== 'green' && (
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">비고</label>
-      <textarea
-  value={remarksDraft}
-  onChange={e => setRemarksDraft(e.target.value)}
-  rows={2}
-  className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border"
-  placeholder="메모를 입력하세요"
-/>
-    </div>
-  )}
-</div>
-  {color === 'green' && (
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">비고</label><textarea
-  value={remarksDraft}
-  onChange={e => setRemarksDraft(e.target.value)}
-  rows={2}
-  className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border"
-  placeholder="메모를 입력하세요"
-/>
-<textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요"/>
-    </div>
-  )}
-</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-400">항목</label>
+              {isCustomCategory ? (
+                <div className="relative">
+                  <input autoFocus type="text" placeholder="직접 입력하세요" onChange={e => setForm({...form, category: e.target.value})} className="w-full font-bold text-sm bg-blue-50 outline-none border-2 border-blue-200 rounded-lg p-2"/>
+                  <button onClick={() => setIsCustomCategory(false)} className="absolute right-2 top-2 text-blue-400"><X size={14}/></button>
+                </div>
+              ) : (
+                <select value={form.category} onChange={e => { if(e.target.value === '기타 (직접 입력)') setIsCustomCategory(true); else setForm({...form, category: e.target.value}); }} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
+                  {categoryList.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              )}
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-400">성격</label>
+              <select value={form.nature} onChange={e => setForm({...form, nature: e.target.value})} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+                <option value="고정">고정</option>
+                <option value="변동">변동</option>
+              </select>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[9px] font-bold text-gray-400">통장 쪼개기</label>
+            <select value={form.accountSplit} onChange={e => setForm({...form, accountSplit: e.target.value})} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
+              <option value="">선택안함</option>
+              {accounts.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-400">{color === 'green' ? '예상 금액' : '예산'}</label>
+              <div className="flex items-center border rounded-lg overflow-hidden bg-white">
+                <select value={form.currency} onChange={e => setForm({...form, currency: e.target.value})} className="text-[9px] bg-gray-50 outline-none font-bold border-r px-1 py-2">
+                  {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
+                </select>
+                <input type="text" value={form.budget === 0 ? '' : form.budget.toLocaleString()} onChange={e => setForm({...form, budget: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0})} className="flex-1 px-2 py-2 text-right font-bold text-xs outline-none" placeholder="0"/>
+              </div>
+            </div>
+            {color === 'green' && (
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-gray-400">목표 금액</label>
+                <div className="flex items-center border rounded-lg overflow-hidden bg-white">
+                  <select value={form.targetCurrency} onChange={e => setForm({...form, targetCurrency: e.target.value})} className="text-[9px] bg-gray-50 outline-none font-bold border-r px-1 py-2">
+                    {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
+                  </select>
+                  <input type="text" value={form.targetAmount === 0 ? '' : form.targetAmount.toLocaleString()} onChange={e => setForm({...form, targetAmount: parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0})} className="flex-1 px-2 py-2 text-right font-bold text-xs outline-none" placeholder="0"/>
+                </div>
+              </div>
+            )}
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-400">비고</label>
+              <textarea value={form.remarks} onChange={e => setForm({...form, remarks: e.target.value})} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요"/>
+            </div>
+          </div>
+        </div>
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">취소</button>
           <button onClick={handleSave} className={`flex-1 py-4 ${color === 'green' ? 'bg-green-600' : 'bg-blue-600'} text-white rounded-2xl font-bold shadow-lg`}>저장</button>
@@ -457,15 +444,11 @@ const removeCustomManager = (name) => {
     setIsAccountModalOpen(false); setEditingAccount(null);
   };
 
-  const addExpensePlan = async () => {
-    if (!userPath) return;
-    await addDoc(collection(db, userPath, 'plans'), { type: 'expense', category: '식비', budget: 0, currency: 'KRW', nature: '변동', remarks: '', accountSplit: '' });
+  const addExpensePlan = () => {
     setIsExpensePlanModalOpen(true);
   };
 
-  const addIncomePlan = async () => {
-    if (!userPath) return;
-    await addDoc(collection(db, userPath, 'plans'), { type: 'income', category: '월급', budget: 0, currency: 'KRW', targetAmount: 0, targetCurrency: 'KRW', nature: '고정', remarks: '', accountSplit: '' });
+  const addIncomePlan = () => {
     setIsIncomePlanModalOpen(true);
   };
 
@@ -1005,7 +988,6 @@ const removeCustomManager = (name) => {
 {isExpensePlanModalOpen && (
   <PlanModal
     title="지출 계획 추가/수정"
-    plans={expensePlans}
     categoryList={expenseCategoryList}
     accounts={accounts}
     userPath={userPath}
@@ -1016,7 +998,6 @@ const removeCustomManager = (name) => {
 {isIncomePlanModalOpen && (
   <PlanModal
     title="수입 계획 추가/수정"
-    plans={incomePlans}
     categoryList={incomeCategoryList}
     accounts={accounts}
     userPath={userPath}
