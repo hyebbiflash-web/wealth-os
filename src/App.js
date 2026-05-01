@@ -987,6 +987,7 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
   const [data, setData] = useState(initialData || { name: '', type: '계좌', category: '현금성', balance: 0, currency: 'KRW', provider: '', accountNum: '', owner: '신랑', customOwner: '' });
   const [isCustomCategory, setIsCustomCategory] = useState(!ASSET_CATEGORIES.includes(data.category) && data.category !== '');
   const [isCustomOwner, setIsCustomOwner] = useState(false);
+  const [searchInstitution, setSearchInstitution] = useState('');
 
   return (
     <div className="space-y-6 text-left pb-4">
