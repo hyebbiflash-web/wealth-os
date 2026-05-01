@@ -246,6 +246,8 @@ const App = () => {
   const [swipedTxId, setSwipedTxId] = useState(null);
   const [swipedPlanId, setSwipedPlanId] = useState(null);
   const [swipedExpensePlanId, setSwipedExpensePlanId] = useState(null);
+  const [goalMemo, setGoalMemo] = useState(() => localStorage.getItem('goalMemo') || '');
+  const [selectedAccount, setSelectedAccount] = useState(null);
   const [customManagers, setCustomManagers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('customManagers') || '[]'); } catch { return []; }
   });
@@ -378,6 +380,16 @@ const App = () => {
                 )}
               </div>
             </div>
+            <div className="bg-gray-900 p-6 rounded-3xl text-white shadow-xl">
+  <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">목표 설정</span>
+  <textarea
+    className="w-full mt-3 bg-transparent text-white text-sm font-bold outline-none resize-none placeholder-gray-600"
+    rows={3}
+    placeholder="목표를 입력하세요..."
+    value={goalMemo}
+    onChange={e => { setGoalMemo(e.target.value); localStorage.setItem('goalMemo', e.target.value); }}
+  />
+</div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-red-500 font-bold"><ArrowDownCircle size={14}/><span>월 지출액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlySpent)}</div></div>
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-blue-500 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
@@ -479,7 +491,7 @@ const App = () => {
                           <button onClick={() => { setEditingAccount(acc); setIsAccountModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                           <button onClick={() => deleteDoc(doc(db, userPath, 'accounts', acc.id))} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                         </div>
-                        <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 cursor-pointer ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`} onClick={() => setSwipedAccountId(swipedAccountId === acc.id ? null : acc.id)}>
+                        <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 cursor-pointer ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`} onClick={() => { if(swipedAccountId === acc.id) { setSwipedAccountId(null); } else { setSelectedAccount(acc); } }}>
                           <div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-blue-50 text-blue-500"><PiggyBank size={18}/></div><div className="flex flex-col"><span className="text-sm font-bold text-gray-800">{acc.name}</span><span className="text-[10px] text-gray-400 font-bold uppercase">{acc.provider}</span></div></div>
                           <span className={`text-sm font-bold ${acc.category === '부채' ? 'text-red-500' : ''}`}>{acc.category === '부채' ? formatValue(-Math.abs(acc.balance), acc.currency) : formatValue(acc.balance, acc.currency)}</span>
                         </div>
@@ -565,6 +577,48 @@ const App = () => {
           color="green"
         />
       )}
+      {selectedAccount && (
+  <div className="absolute inset-0 bg-black/60 z-50 flex items-end" onClick={() => setSelectedAccount(null)}>
+    <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-bold">{selectedAccount.name}</h2>
+        <button onClick={() => setSelectedAccount(null)} className="text-gray-400 hover:bg-gray-100 p-1 rounded-full"><X size={24}/></button>
+      </div>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">카테고리</span>
+          <span className="text-sm font-bold">{selectedAccount.category}</span>
+        </div>
+        <div className="flex justify-between items-center py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">금융기관</span>
+          <span className="text-sm font-bold">{selectedAccount.provider || '-'}</span>
+        </div>
+        <div className="flex justify-between items-center py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">계좌번호</span>
+          <span className="text-sm font-bold">{selectedAccount.accountNum || '-'}</span>
+        </div>
+        <div className="flex justify-between items-center py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">소유자</span>
+          <span className="text-sm font-bold">{selectedAccount.owner || '-'}</span>
+        </div>
+        <div className="flex justify-between items-center py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">잔액</span>
+          <span className={`text-lg font-bold ${selectedAccount.category === '부채' ? 'text-red-500' : 'text-blue-600'}`}>{selectedAccount.category === '부채' ? formatValue(-Math.abs(selectedAccount.balance), selectedAccount.currency) : formatValue(selectedAccount.balance, selectedAccount.currency)}</span>
+        </div>
+        {selectedAccount.memo && (
+          <div className="flex justify-between items-start py-2 border-b border-gray-50">
+            <span className="text-xs font-bold text-gray-400">메모</span>
+            <span className="text-sm font-bold text-right max-w-[60%]">{selectedAccount.memo}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex gap-3 mt-6">
+        <button onClick={() => { setSelectedAccount(null); setEditingAccount(selectedAccount); setIsAccountModalOpen(true); }} className="flex-1 py-3 bg-yellow-400 text-white rounded-2xl font-bold">수정</button>
+        <button onClick={() => { deleteDoc(doc(db, userPath, 'accounts', selectedAccount.id)); setSelectedAccount(null); }} className="flex-1 py-3 bg-red-500 text-white rounded-2xl font-bold">삭제</button>
+      </div>
+    </div>
+  </div>
+)}
       {isAccountModalOpen && (
         <div className="absolute inset-0 bg-black/60 z-50 flex items-end"><div className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl"><div className="flex justify-between items-center mb-6 font-bold"><h2 className="text-lg">자산 추가/수정</h2><button onClick={() => setIsAccountModalOpen(false)} className="text-gray-400 hover:bg-gray-100 p-1 rounded-full"><X size={24}/></button></div><AccountModalInner onSave={handleSaveAccount} onCancel={() => setIsAccountModalOpen(false)} initialData={editingAccount} managerList={managerList} addCustomManager={addCustomManager} /></div></div>
       )}
