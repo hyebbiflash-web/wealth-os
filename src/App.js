@@ -431,7 +431,7 @@ const removeCustomManager = (name) => {
             <div className="bg-white rounded-2xl p-5">
               <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button
   onClick={() => setActiveTab('history')}
-  className="bg-transparent border-none shadow-none p-0 text-[11px] text-blue-600 font-bold flex items-center gap-1 hover:text-blue-700 transition-colors outline-none ring-0"
+  className="bg-transparent border-none shadow-none p-0 text-[11px] text-blue-600 font-bold flex items-center gap-1 hover:text-blue-700 transition-colors"
 >
   전체보기 <ChevronRight size={12}/>
 </button></div>
@@ -1016,11 +1016,11 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
           <button onClick={() => setTx({...tx, type: 'income'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'income' ? 'bg-white text-blue-500 shadow-sm border' : 'text-gray-500'}`}>수입</button>
         </div>
         <div className="space-y-4">
-        <div className="flex gap-2 items-center py-3 px-3 bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
+        <div className="flex gap-2 items-center py-3 px-3 bg-gray-50 rounded-[22px] border border-gray-100 shadow-sm overflow-hidden">
             <select value={tx.currency} onChange={e => setTx({...tx, currency: e.target.value})} className="bg-white p-1 rounded font-bold text-xs outline-none cursor-pointer border" style={{flexShrink: 0}}>
               {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
             </select>
-            <input type="text" placeholder="0" value={tx.amount === '' ? '' : parseInt(tx.amount).toLocaleString()} onChange={e => setTx({...tx, amount: e.target.value.replace(/[^0-9-]/g, '')})} className="text-2xl font-bold outline-none bg-transparent text-right" style={{width: 0, flex: 1, minWidth: 0}} />
+            <input type="text" placeholder="0" value={tx.amount === '' ? '' : parseInt(tx.amount).toLocaleString()} onChange={e => setTx({...tx, amount: e.target.value.replace(/[^0-9-]/g, '')})} className="text-2xl font-bold outline-none bg-transparent text-right border-none focus:ring-0" style={{width: 0, flex: 1, minWidth: 0}} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">카테고리</label><select value={tx.category} onChange={e => setTx({...tx, category: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer">{tx.type === 'expense' ? expenseCategoryList.map(cat => <option key={cat} value={cat}>{cat}</option>) : incomeCategoryList.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select></div>
@@ -1034,7 +1034,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
             </div>
           </div>
           <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">자산 선택</label><select value={tx.accountId} onChange={e => setTx({...tx, accountId: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer"><option value="">선택하세요</option>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({formatValue(acc.balance, acc.currency)})</option>)}</select></div>
-          <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="block w-full max-w-full box-border p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer" />
+          <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="block w-full max-w-full box-border p-4 bg-gray-50 rounded-2xl font-bold text-sm outline-none border border-gray-200 cursor-pointer" />
         </div>
         <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">메모</label><textarea value={tx.memo || ''} onChange={e => setTx({...tx, memo: e.target.value})} placeholder="메모를 입력하세요" rows={2} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border resize-none" /></div>
         <button onClick={() => onSubmit({...tx, manager: isCustomMgr ? tx.customManager : tx.manager})} className={`w-full py-4 rounded-2xl text-white font-bold shadow-xl active:scale-95 transition-all ${tx.type==='expense'?'bg-blue-600':'bg-indigo-600'}`}>{buttonLabel}</button>
