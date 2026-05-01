@@ -292,6 +292,7 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [accounts, setAccounts] = useState([]);
+  const [searchInstitution, setSearchInstitution] = useState('');
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [expensePlans, setExpensePlans] = useState([]);
   const [incomePlans, setIncomePlans] = useState([]);
@@ -1003,9 +1004,33 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
                 <button onClick={() => setData({...data, provider: '선택하세요', customProvider: ''})} className="absolute right-2 top-4 text-blue-400"><X size={14}/></button>
               </div>
             ) : (
-              <select value={data.provider} onChange={e => setData({...data, provider: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-xs outline-none border shadow-sm focus:border-blue-500 cursor-pointer appearance-none">
-                {ALL_FINANCIAL_INSTITUTIONS.map(b => (<option key={b} value={b} disabled={b.startsWith('---')}>{b}</option>))}
-              </select>
+              <div>
+
+  <input
+    placeholder="은행 검색 (예: 부산)"
+    value={searchInstitution}
+    onChange={(e) => setSearchInstitution(e.target.value)}
+    className="w-full p-3 border rounded-xl mb-2"
+  />
+
+  <div className="max-h-40 overflow-y-auto border rounded-xl">
+    {ALL_FINANCIAL_INSTITUTIONS
+      .filter(item => item.includes(searchInstitution))
+      .map((item, idx) => (
+        <div
+          key={idx}
+          onClick={() => {
+            setTx({...tx, institution: item});
+            setSearchInstitution(item);
+          }}
+          className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+        >
+          {item}
+        </div>
+      ))}
+  </div>
+
+</div>
             )}
           </div>
           <div className="space-y-1">
@@ -1072,6 +1097,7 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
 
 const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCategoryList, initialData, managerList, addCustomManager, title, buttonLabel }) => {
   const [tx, setTx] = useState(initialData || { type: 'expense', amount: '', category: '', accountId: '', date: new Date().toISOString().split('T')[0], currency: 'KRW', manager: '신랑', customManager: '' });
+  const [searchInstitution, setSearchInstitution] = useState('');
   const [isCustomMgr, setIsCustomMgr] = useState(false);
   useEffect(() => { if (!initialData) { const list = tx.type === 'expense' ? expenseCategoryList : incomeCategoryList; setTx(p => ({...p, category: list[0], accountId: accounts[0]?.id || ''})); } }, [tx.type, expenseCategoryList, incomeCategoryList, accounts, initialData]);
   return (
