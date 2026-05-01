@@ -408,7 +408,7 @@ const App = () => {
       onChange={e => setGoalMemo(e.target.value)}
     />
   ) : (
-    <p className="text-sm font-bold text-white whitespace-pre-wrap min-h-[60px]">
+    <p className="text-sm font-bold text-white whitespace-pre-wrap min-h-[40px]">
       {goalMemo || <span className="text-gray-600">수정 버튼을 눌러 목표를 입력하세요</span>}
     </p>
   )}
