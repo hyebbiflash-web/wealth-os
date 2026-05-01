@@ -515,7 +515,21 @@ const App = () => {
                           <button onClick={() => deleteDoc(doc(db, userPath, 'accounts', acc.id))} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                         </div>
                         <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 cursor-pointer ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`} onClick={() => { if(swipedAccountId === acc.id) { setSwipedAccountId(null); } else { setSelectedAccount(acc); } }}>
-                          <div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-blue-50 text-blue-500"><PiggyBank size={18}/></div><div className="flex flex-col"><span className="text-sm font-bold text-gray-800">{acc.name}</span><span className="text-[10px] text-gray-400 font-bold uppercase">{acc.provider}</span></div></div>
+                        <div className="flex items-center gap-3">
+                        {acc.owner && (() => {
+  const ownerColors = {
+    '신랑': 'bg-blue-100',
+    '신부': 'bg-pink-100',
+    '부부': 'bg-yellow-100',
+  };
+  const extraColors = ['bg-green-100', 'bg-purple-100', 'bg-orange-100', 'bg-teal-100', 'bg-red-100', 'bg-indigo-100'];
+  const allOwners = [...new Set(accounts.map(a => a.owner).filter(Boolean))];
+  const extraOwners = allOwners.filter(o => !['신랑','신부','부부'].includes(o));
+  const bgColor = ownerColors[acc.owner] || extraColors[extraOwners.indexOf(acc.owner) % extraColors.length] || 'bg-gray-100';
+  return <span className={`text-[10px] font-bold text-gray-800 px-2 py-1 rounded-lg shadow-sm whitespace-nowrap ${bgColor}`}>{acc.owner}</span>;
+})()}
+  <span className="text-sm font-bold text-gray-800">{acc.name}</span>
+</div>
                           <span className={`text-sm font-bold ${acc.category === '부채' ? 'text-red-500' : ''}`}>{acc.category === '부채' ? formatValue(-Math.abs(acc.balance), acc.currency) : formatValue(acc.balance, acc.currency)}</span>
                         </div>
                       </div>
@@ -773,7 +787,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
 const SidebarItem = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   const active = activeTab === id;
   return (
-    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors rounded-none ${active ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}>
+    <button onClick={() => setActiveTab(id)} className={`flex flex-col items-center justify-center p-3 w-full transition-colors rounded-2xl ${active ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}>
       <Icon size={24} />
       <span className="text-[10px] mt-1 font-bold">{label}</span>
     </button>
