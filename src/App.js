@@ -635,8 +635,8 @@ const removeCustomManager = (name) => {
       
 {/* 2. 내역 상세 보기 팝업 (상세 정보 버전) */}
 {selectedHistory && (
-  <div className="fixed inset-0 bg-white z-[9999] flex items-end justify-center" onClick={() => setSelectedHistory(null)}>
-    <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl mb-[env(safe-area-inset-bottom)]" onClick={e => e.stopPropagation()}>
+  <div className="fixed inset-0 bg-white z-[9999] flex flex-col justify-end" onClick={() => setSelectedHistory(null)}>
+    <div className="w-full h-full bg-white rounded-t-3xl p-6 shadow-2xl mb-[env(safe-area-inset-bottom)]" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold">내역 상세 정보</h2>
         <button onClick={() => setSelectedHistory(null)} className="text-gray-400 p-1"><X size={24}/></button>
@@ -689,7 +689,7 @@ const removeCustomManager = (name) => {
 )}
     {/* 1. 계획 상세 보기 팝업 (하단 탭 밀림 방지 + 버튼 색상 유지) */}
     {selectedPlan && (
-  <div className="fixed inset-0 bg-white z-[9999] flex items-end justify-center" onClick={() => setSelectedPlan(null)}>
+  <div className="fixed inset-0 bg-white z-[9999] flex flex-col justify-end" onClick={() => setSelectedPlan(null)}>
     <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <div className="flex flex-col text-left">
@@ -907,6 +907,16 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
             <input type="text" value={data.balance === 0 ? '' : data.balance.toLocaleString()} onChange={e => setData({...data, balance: parseInt(e.target.value.replace(/[^0-9-]/g, '')) || 0})} className="flex-1 bg-transparent p-3 text-right font-bold text-blue-600 outline-none text-xs" placeholder="0"/>
           </div>
         </div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-gray-400 ml-1">비고</label>
+          <textarea
+            value={data.memo || ''}
+            onChange={e => setData({...data, memo: e.target.value})}
+            placeholder="메모를 입력하세요"
+            rows={3}
+            className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm outline-none border shadow-sm focus:border-blue-500 resize-none"
+          />
+        </div>
       </div>
       <div className="flex gap-2 pt-4">
       <button onClick={onCancel} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-colors">취소</button>
@@ -947,7 +957,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
             </div>
           </div>
           <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">자산 선택</label><select value={tx.accountId} onChange={e => setTx({...tx, accountId: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer"><option value="">선택하세요</option>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({formatValue(acc.balance, acc.currency)})</option>)}</select></div>
-          <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer" />
+          <input type="date" value={tx.date} onChange={e => setTx({...tx, date: e.target.value})} className="block w-full max-w-full box-border p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border cursor-pointer" />
         </div>
         <div className="space-y-1 text-left font-bold"><label className="text-[10px] text-gray-400 uppercase">메모</label><textarea value={tx.memo || ''} onChange={e => setTx({...tx, memo: e.target.value})} placeholder="메모를 입력하세요" rows={2} className="w-full p-3 bg-gray-50 rounded-xl font-bold text-sm outline-none border resize-none" /></div>
         <button onClick={() => onSubmit({...tx, manager: isCustomMgr ? tx.customManager : tx.manager})} className={`w-full py-4 rounded-2xl text-white font-bold shadow-xl active:scale-95 transition-all ${tx.type==='expense'?'bg-blue-600':'bg-indigo-600'}`}>{buttonLabel}</button>
