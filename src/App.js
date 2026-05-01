@@ -148,7 +148,7 @@ const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, co
   };
 
   return (
-    <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
       <div className="w-full bg-white rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
         <h2 className="text-lg font-bold mb-6">{title}</h2>
@@ -359,7 +359,7 @@ const removeCustomManager = (name) => {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="flex flex-col bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative font-sans text-left" style={{height: '100dvh', overflow: 'hidden'}}>
+    <div className="flex flex-col bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative font-sans text-left" style={{height: '100dvh', overflow: 'hidden', position: 'relative', isolation: 'isolate'}}>
       <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
         <div><h1 className="text-xl font-bold tracking-tight">Wealth os</h1><p className="text-[10px] text-gray-400 font-bold">USER: <span className="text-blue-600">{user?.email?.split('@')[0] || user?.displayName || '사용자'}</span></p></div>
         <button onClick={() => signOut(auth)} className="text-gray-400 hover:text-red-400 transition-colors"><LogOut size={20}/></button>
@@ -613,19 +613,30 @@ const removeCustomManager = (name) => {
             </div>
           </div>
         )}
-      </main>
-      <nav className="bg-white border-t flex justify-around items-center h-20 px-2 sticky bottom-0 z-30 shadow-inner">
-        <SidebarItem id="dashboard" icon={LayoutDashboard} label="홈" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <SidebarItem id="assets" icon={Wallet} label="자산" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <SidebarItem id="plan" icon={Target} label="계획" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <SidebarItem id="record" icon={PlusCircle} label="기록" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <SidebarItem id="history" icon={History} label="내역" activeTab={activeTab} setActiveTab={setActiveTab} />
-      </nav>
+     </main>
+
+{!selectedAccount && 
+ !selectedPlan && 
+ !selectedHistory && 
+ !isExpensePlanModalOpen && 
+ !isIncomePlanModalOpen && 
+ !isAccountModalOpen && 
+ !isTransactionEditModalOpen && (
+
+  <nav className="bg-white border-t flex justify-around items-center h-20 px-2 shadow-inner relative z-0">
+    <SidebarItem id="dashboard" icon={LayoutDashboard} label="홈" activeTab={activeTab} setActiveTab={setActiveTab} />
+    <SidebarItem id="assets" icon={Wallet} label="자산" activeTab={activeTab} setActiveTab={setActiveTab} />
+    <SidebarItem id="plan" icon={Target} label="계획" activeTab={activeTab} setActiveTab={setActiveTab} />
+    <SidebarItem id="record" icon={PlusCircle} label="기록" activeTab={activeTab} setActiveTab={setActiveTab} />
+    <SidebarItem id="history" icon={History} label="내역" activeTab={activeTab} setActiveTab={setActiveTab} />
+  </nav>
+
+)}
       
 {/* 2. 내역 상세 보기 팝업 (상세 정보 버전) */}
 {selectedHistory && (
-  <div className="absolute inset-0 bg-black/60 z-50 flex items-end" onClick={() => setSelectedHistory(null)}>
-    <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center" onClick={() => setSelectedHistory(null)}>
+    <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl mb-[env(safe-area-inset-bottom)]" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold">내역 상세 정보</h2>
         <button onClick={() => setSelectedHistory(null)} className="text-gray-400 p-1"><X size={24}/></button>
@@ -678,8 +689,8 @@ const removeCustomManager = (name) => {
 )}
     {/* 1. 계획 상세 보기 팝업 (하단 탭 밀림 방지 + 버튼 색상 유지) */}
     {selectedPlan && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end" onClick={() => setSelectedPlan(null)}>
-          <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
+  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center" onClick={() => setSelectedPlan(null)}>
+    <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <div className="flex flex-col text-left">
                 <span className="text-[10px] font-bold text-yellow-500 mb-1 uppercase">Plan Details</span>
@@ -776,7 +787,7 @@ const removeCustomManager = (name) => {
   />
 )}
       {selectedAccount && (
-  <div className="absolute inset-0 bg-black/60 z-50 flex items-end" onClick={() => setSelectedAccount(null)}>
+  <div className="fixed inset-0 bg-transparent z-[9999] flex items-end" onClick={() => setSelectedAccount(null)}>
     <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold">{selectedAccount.name}</h2>
