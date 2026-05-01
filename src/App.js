@@ -134,19 +134,14 @@ const formatValue = (num, unit = 'KRW') => {
     default: return `${sign}${formatted} ${unit}`;
   }
 };
-const getPersonColorStyle = (name, managerList = []) => {
-  if (name === '신랑') return { backgroundColor: '#DBEAFE', color: '#111827' };
-  if (name === '신부') return { backgroundColor: '#FCE7F3', color: '#111827' };
-  if (name === '부부') return { backgroundColor: '#FEF3C7', color: '#111827' };
-
-  const colors = ['#DCFCE7', '#F3E8FF', '#FFEDD5', '#CCFBF1', '#FEE2E2', '#E0E7FF'];
+const getPersonColorClass = (name, managerList = []) => {
+  if (name === '신랑') return 'bg-blue-100 text-gray-800';
+  if (name === '신부') return 'bg-pink-100 text-gray-800';
+  if (name === '부부') return 'bg-yellow-100 text-gray-800';
+  const colors = ['bg-green-100', 'bg-purple-100', 'bg-orange-100', 'bg-teal-100', 'bg-red-100', 'bg-indigo-100'];
   const extraPeople = managerList.filter(m => !['신랑','신부','부부'].includes(m));
   const index = extraPeople.indexOf(name);
-
-  return {
-    backgroundColor: colors[index % colors.length] || '#F3F4F6',
-    color: '#111827'
-  };
+  return `${colors[index % colors.length] || 'bg-gray-100'} text-gray-800`;
 };
 const GoogleIcon = ({ white }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -724,19 +719,19 @@ const removeCustomManager = (name) => {
                 <div className="space-y-4">
   <div><label className="text-[9px] font-bold text-blue-500 mb-1 block">지출 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, expense: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense==='all'?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.expense===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m, managerList)} ${managerFilter.expense===m? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-indigo-500 mb-1 block">수입 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, income: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income==='all'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.income===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m, managerList)} ${managerFilter.income===m? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-gray-600 mb-1 block">자산 소유자</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, asset: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset==='all'?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.asset===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m, managerList)} ${managerFilter.asset===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && !['신랑', '신부', '부부'].includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('소유자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
@@ -834,7 +829,7 @@ const removeCustomManager = (name) => {
         <div className="flex justify-between py-2 border-b border-gray-50">
           <span className="text-xs font-bold text-gray-400">담당자</span>
           {selectedHistory.manager ? (
-  <span className={`text-xs font-bold px-2 py-1 rounded-lg ${getPersonColorClass(selectedHistory.manager, managerList)}`}>
+  <span className={`text-xs font-bold px-2 py-1 rounded-lg `}>
     {selectedHistory.manager}
   </span>
 ) : (
