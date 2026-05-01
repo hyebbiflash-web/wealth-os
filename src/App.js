@@ -358,6 +358,29 @@ const App = () => {
     const fromTx = transactions.map(t => t.manager).filter(m => m);
     return Array.from(new Set(["신랑", "신부", ...customManagers, ...fromTx])).filter(m => m !== "기타 (직접 입력)");
   }, [transactions, customManagers]);
+  const getPersonColorClass = (name) => {
+    const fixedColors = {
+      '신랑': 'bg-blue-100 text-gray-900',
+      '신부': 'bg-pink-100 text-gray-900',
+      '부부': 'bg-yellow-100 text-gray-900',
+    };
+  
+    if (fixedColors[name]) return fixedColors[name];
+  
+    const extraColors = [
+      'bg-green-100 text-gray-900',
+      'bg-purple-100 text-gray-900',
+      'bg-orange-100 text-gray-900',
+      'bg-teal-100 text-gray-900',
+      'bg-red-100 text-gray-900',
+      'bg-indigo-100 text-gray-900',
+    ];
+  
+    const extraPeople = managerList.filter(m => !['신랑', '신부', '부부'].includes(m));
+    const index = extraPeople.indexOf(name);
+  
+    return extraColors[index % extraColors.length] || 'bg-gray-100 text-gray-900';
+  };
 
   // 1. 추가 기능: 이 주머니는 추가할 때만 써요!
 const addCustomManager = (name) => {
@@ -668,18 +691,11 @@ const removeCustomManager = (name) => {
     </div>
   )}
                         <div className="flex items-center gap-3">
-                        {acc.owner && (() => {
-  const ownerColors = {
-    '신랑': 'bg-blue-100',
-    '신부': 'bg-pink-100',
-    '부부': 'bg-yellow-100',
-  };
-  const extraColors = ['bg-green-100', 'bg-purple-100', 'bg-orange-100', 'bg-teal-100', 'bg-red-100', 'bg-indigo-100'];
-  const allOwners = [...new Set(accounts.map(a => a.owner).filter(Boolean))];
-  const extraOwners = allOwners.filter(o => !['신랑','신부','부부'].includes(o));
-  const bgColor = ownerColors[acc.owner] || extraColors[extraOwners.indexOf(acc.owner) % extraColors.length] || 'bg-gray-100';
-  return <span className={`text-[10px] font-bold text-gray-800 px-2 py-1 rounded-lg shadow-sm whitespace-nowrap ${bgColor}`}>{acc.owner}</span>;
-})()}
+                        {acc.owner && (
+  <span className={`text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap ${getPersonColorClass(acc.owner)}`}>
+    {acc.owner}
+  </span>
+)}
   <span className="text-sm font-bold text-gray-800">{acc.name}</span>
 </div>
                           <span className={`text-sm font-bold ${acc.category === '부채' ? 'text-red-500' : ''}`}>{acc.category === '부채' ? formatValue(-Math.abs(acc.balance), acc.currency) : formatValue(acc.balance, acc.currency)}</span>
@@ -707,19 +723,19 @@ const removeCustomManager = (name) => {
                 <div className="space-y-4">
   <div><label className="text-[9px] font-bold text-blue-500 mb-1 block">지출 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, expense: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense==='all'?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense===m?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.expense===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-indigo-500 mb-1 block">수입 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, income: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income==='all'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income===m?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.income===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
   <div><label className="text-[9px] font-bold text-gray-600 mb-1 block">자산 소유자</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, asset: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset==='all'?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
   <div key={m} className="relative flex items-center">
-    <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset===m?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${getPersonColorClass(m)} ${managerFilter.asset===m ? 'ring-2 ring-blue-400' : ''}`}>{m}</button>
     {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
   </div>
 ))}<button onClick={() => { const name = window.prompt('소유자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
@@ -1021,7 +1037,7 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
         <div
           key={idx}
           onClick={() => {
-            setTx({...tx, institution: item});
+            setData({...data, provider: item});
             setSearchInstitution(item);
           }}
           className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
