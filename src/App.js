@@ -529,14 +529,25 @@ const removeCustomManager = (name) => {
               <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-3"><div className={`p-1.5 rounded-full ${tx.type==='expense'?'bg-red-50 text-red-400':'bg-blue-50 text-blue-400'}`}><ArrowDownCircle size={14}/></div><div><p className="font-bold">{tx.category}</p><div className="flex items-center gap-1 mt-0.5">
-  <span className="text-[10px] text-gray-400 font-bold">{tx.date}</span>
+                    <div className="flex items-center gap-3">
+  <div className={`p-1.5 rounded-full ${tx.type==='expense'?'bg-red-50 text-red-400':'bg-blue-50 text-blue-400'}`}>
+    <ArrowDownCircle size={14}/>
+  </div>
+
   {tx.manager && (
-    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${getPersonColorClass(tx.manager, managerList)}`}>
-      {tx.manager}
-    </span>
+    <span
+    style={getPersonColorStyle(tx.manager, managerList)}
+    className="text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap"
+  >
+    {tx.manager}
+  </span>
   )}
-</div></div></div>
+
+  <div>
+    <p className="font-bold">{tx.category}</p>
+    <p className="text-[10px] text-gray-400 font-bold">{tx.date}</p>
+  </div>
+</div>
                     <span className={`font-bold ${tx.type==='expense'?'text-red-500':'text-blue-500'}`}>{tx.type==='expense'?'-':'+'} {formatValue(tx.amount, tx.currency)}</span>
                   </div>
                 ))}
@@ -783,14 +794,23 @@ const removeCustomManager = (name) => {
                     <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'transactions', tx.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                   </div>
                   <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 ${swipedTxId === tx.id ? '-translate-x-32' : 'translate-x-0'}`}>
-                    <div className="flex items-center gap-3"><div className={`w-1 h-8 rounded-full ${tx.type === 'expense' ? 'bg-red-400' : 'bg-blue-400'}`} /><div><p className="text-sm font-bold">{tx.category}</p><div className="flex items-center gap-1 mt-0.5">
-  <span className="text-[10px] text-gray-400 font-bold">{tx.date}</span>
+                  <div className="flex items-center gap-3">
+  <div className={`w-1 h-8 rounded-full ${tx.type === 'expense' ? 'bg-red-400' : 'bg-blue-400'}`} />
+
   {tx.manager && (
-    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${getPersonColorClass(tx.manager, managerList)}`}>
+   <span
+   style={getPersonColorStyle(tx.manager, managerList)}
+   className="text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap"
+ >
       {tx.manager}
     </span>
   )}
-</div></div></div>
+
+  <div>
+    <p className="text-sm font-bold">{tx.category}</p>
+    <p className="text-[10px] text-gray-400 font-bold">{tx.date}</p>
+  </div>
+</div>
                     <span className={`text-sm font-bold ${tx.type === 'expense' ? 'text-red-500' : 'text-blue-600'}`}>{tx.type === 'expense' ? '-' : '+'} {formatValue(tx.amount, tx.currency)}</span>
                   </div>
                 </div>
