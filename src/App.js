@@ -148,7 +148,7 @@ const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, co
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center p-4">
       <div className="w-full bg-white rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 p-1 hover:bg-gray-100 rounded-full"><X size={24}/></button>
         <h2 className="text-lg font-bold mb-6">{title}</h2>
@@ -635,7 +635,7 @@ const removeCustomManager = (name) => {
       
 {/* 2. 내역 상세 보기 팝업 (상세 정보 버전) */}
 {selectedHistory && (
-  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center" onClick={() => setSelectedHistory(null)}>
+  <div className="fixed inset-0 bg-white z-[9999] flex items-end justify-center" onClick={() => setSelectedHistory(null)}>
     <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl mb-[env(safe-area-inset-bottom)]" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-bold">내역 상세 정보</h2>
@@ -689,7 +689,7 @@ const removeCustomManager = (name) => {
 )}
     {/* 1. 계획 상세 보기 팝업 (하단 탭 밀림 방지 + 버튼 색상 유지) */}
     {selectedPlan && (
-  <div className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center" onClick={() => setSelectedPlan(null)}>
+  <div className="fixed inset-0 bg-white z-[9999] flex items-end justify-center" onClick={() => setSelectedPlan(null)}>
     <div className="w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <div className="flex flex-col text-left">
