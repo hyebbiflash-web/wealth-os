@@ -585,12 +585,25 @@ const removeCustomManager = (name) => {
                         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                       </div>
                       <div className={`relative bg-gray-50 p-4 space-y-2 border border-transparent transition-transform duration-300 z-10 ${swipedExpensePlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
-                        <div className="flex justify-between text-[11px] font-bold px-1">
-                          <div className="flex items-center gap-2"><span className="text-gray-800">{plan.category}</span>{plan.nature === '고정' && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">FIXED</span>}</div>
-                          <div className="flex items-center gap-1.5"><span className={isOver ? "text-red-500" : "text-blue-600"}>{formatValue(spent, plan.currency)}</span><span className="text-gray-300 font-normal">/</span><span className="text-gray-400">{formatValue(plan.budget, plan.currency)}</span></div>
+                      <div className="flex justify-between text-[11px] font-bold px-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-800">{plan.category}</span>
+                          {plan.nature === '고정' && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">FIXED</span>}
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className={`h-full transition-all duration-1000 ease-out ${isOver ? 'bg-red-400' : 'bg-blue-500'}`} style={{width: `${progress}%`}}></div></div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={isOver ? "text-red-500" : "text-blue-600"}>{formatValue(spent, plan.currency)}</span>
+                          <span className="text-gray-300 font-normal">/</span>
+                          <span className="text-gray-400">{formatValue(plan.budget, plan.currency)}</span>
+                        </div>
                       </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-1000 ease-out ${isOver ? 'bg-red-400' : 'bg-blue-500'}`} style={{width: `${progress}%`}}></div>
+                      </div>
+                      <div className="flex gap-3 px-1 mt-1">
+                        {plan.accountSplit && <span className="text-[9px] text-gray-400 font-bold">🏦 {plan.accountSplit}</span>}
+                        {plan.remarks && <span className="text-[9px] text-gray-400 font-bold truncate max-w-[60%]">📝 {plan.remarks}</span>}
+                      </div>
+                    </div>
                     </div>
                   );
                 })}
@@ -611,18 +624,23 @@ const removeCustomManager = (name) => {
                         <button onClick={(e) => { e.stopPropagation(); setIncomePlans(prev => { const idx = prev.findIndex(p => p.id === plan.id); return [...prev.slice(0, idx), plan, ...prev.slice(idx+1)]; }); setIsIncomePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                       </div>
-                      <div className={`relative bg-gray-50 p-4 flex justify-between items-center border border-transparent transition-transform duration-300 z-10 ${swipedPlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
-                        <div>
+                      <div className={`relative bg-gray-50 p-4 border border-transparent transition-transform duration-300 z-10 ${swipedPlanId === plan.id ? '-translate-x-32' : 'translate-x-0'}`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold text-gray-800">{plan.category}</span>
-                          {plan.nature && <span className="ml-2 text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">{plan.nature}</span>}
-                          <p className="text-[9px] text-gray-400 mt-0.5 font-bold">예상: {formatValue(plan.budget, plan.currency)}</p>
-                          {plan.accountSplit && <p className="text-[9px] text-gray-400 font-bold">통장: {plan.accountSplit}</p>}
+                          {plan.nature && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">{plan.nature}</span>}
                         </div>
                         <div className="text-right">
                           <p className={`text-sm font-bold ${isSuccess ? 'text-blue-600' : 'text-gray-400'}`}>{formatValue(actual, plan.currency)}</p>
                           {isSuccess && <span className="text-[8px] text-blue-400 font-bold uppercase tracking-tighter">SUCCESS</span>}
                         </div>
                       </div>
+                      <div className="space-y-0.5">
+                        {plan.accountSplit && <p className="text-[9px] text-gray-400 font-bold">🏦 통장: {plan.accountSplit}</p>}
+                        <p className="text-[9px] text-gray-400 font-bold">💰 예상: {formatValue(plan.budget, plan.currency)}</p>
+                        {plan.targetAmount > 0 && <p className="text-[9px] text-gray-400 font-bold">🎯 목표: {formatValue(plan.targetAmount, plan.targetCurrency)}</p>}
+                      </div>
+                    </div>
                     </div>
                   );
                 })}
@@ -661,7 +679,7 @@ const removeCustomManager = (name) => {
             {ASSET_CATEGORIES.map((cat) => {
               const filtered = accounts
               .filter(a => a.category === cat || (cat.includes('기타') && !ASSET_CATEGORIES.includes(a.category)))
-              .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
               if (filtered.length === 0) return null;
               return (
                 <div key={cat} className="space-y-3 mb-8 px-1">
@@ -928,7 +946,7 @@ const removeCustomManager = (name) => {
                 </span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-gray-50">
-                <span className="text-sm font-medium text-gray-400">계획 금액</span>
+              <span className="text-sm font-medium text-gray-400">예상 금액</span>
                 <span className="text-lg font-black text-gray-800">{formatValue(selectedPlan.budget, selectedPlan.currency)}</span>
               </div>
               {selectedPlan.type === 'income' && (
