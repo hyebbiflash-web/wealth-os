@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, PiggyBank, X, Loader2, Filter, Calendar, LogOut, Trash2, ChevronRight, ShieldCheck, Plus, UserCheck, Building2, Edit, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Target, Wallet, History, PlusCircle, ArrowUpCircle, ArrowDownCircle, ArrowUpDown, PiggyBank, X, Loader2, Filter, Calendar, LogOut, Trash2, ChevronRight, ShieldCheck, Plus, UserCheck, Building2, Edit, CreditCard } from 'lucide-react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXkr2KSM8ccqLkeRoHNDgV7CdDyDaEFXs",
@@ -225,6 +225,7 @@ const App = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [accounts, setAccounts] = useState([]);
+  const [isReorderMode, setIsReorderMode] = useState(false);
   const [expensePlans, setExpensePlans] = useState([]);
   const [incomePlans, setIncomePlans] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -362,7 +363,10 @@ const removeCustomManager = (name) => {
     <div className="flex flex-col bg-gray-50 text-gray-900 max-w-md mx-auto border-x relative font-sans text-left" style={{height: '100dvh', overflow: 'hidden', position: 'relative', isolation: 'isolate'}}>
       <header className="bg-white px-6 pt-8 pb-4 border-b flex justify-between items-end">
         <div><h1 className="text-xl font-bold tracking-tight">Wealth os</h1><p className="text-[10px] text-gray-400 font-bold">USER: <span className="text-blue-600">{user?.email?.split('@')[0] || user?.displayName || '사용자'}</span></p></div>
-        <button onClick={() => signOut(auth)} className="text-gray-400 hover:text-red-400 transition-colors"><LogOut size={20}/></button>
+        <button 
+  onClick={() => signOut(auth)} 
+  className="p-0 bg-transparent border-none outline-none text-gray-400 hover:text-red-400 transition-colors"
+><LogOut size={20}/></button>
       </header>
       <main className="flex-1 px-4 pt-4" style={{overflowY: 'auto', paddingBottom: '1rem'}}>
         {activeTab === 'dashboard' && (
@@ -425,7 +429,12 @@ const removeCustomManager = (name) => {
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between"><div><div className="flex items-center gap-2 mb-1 text-blue-500 font-bold"><ArrowUpCircle size={14}/><span>월 수입액</span></div><div className="text-[9px] text-gray-400 font-bold mb-2">({monthStart.slice(5).replace(/-/g,'.')} ~ {selectedDate.slice(5).replace(/-/g,'.')})</div></div><div className="text-lg font-bold">{formatValue(monthlyIncome)}</div></div>
             </div>
             <div className="bg-white rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button onClick={() => setActiveTab('history')} className="text-[11px] text-gray-400 font-bold flex items-center gap-1 hover:text-blue-500 transition-colors">전체보기 <ChevronRight size={12}/></button></div>
+              <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-gray-800 text-sm">최근 이용 내역</h3><button
+  onClick={() => setActiveTab('history')}
+  className="bg-transparent border-none shadow-none p-0 text-[11px] text-blue-600 font-bold flex items-center gap-1 hover:text-blue-700 transition-colors outline-none ring-0"
+>
+  전체보기 <ChevronRight size={12}/>
+</button></div>
               <div className="space-y-4">
                 {periodTxs.slice(0, 3).map(tx => (
                   <div key={tx.id} className="flex justify-between items-center text-sm">
@@ -507,9 +516,33 @@ const removeCustomManager = (name) => {
         )}
         {activeTab === 'assets' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center px-1 mb-6"><h2 className="text-lg font-bold flex items-center gap-2 text-black"><Wallet size={24} className="text-blue-600" /> 전체 자산 현황</h2><button onClick={() => { setEditingAccount(null); setIsAccountModalOpen(true); }} className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all"><Plus size={20}/></button></div>
+            <div className="flex justify-between items-center px-1 mb-6">
+  <h2 className="text-lg font-bold flex items-center gap-2 text-black">
+    <Wallet size={24} className="text-blue-600" /> 전체 자산 현황
+  </h2>
+
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => setIsReorderMode(!isReorderMode)}
+      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg transition-all ${
+        isReorderMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+      }`}
+    >
+        <ArrowUpDown size={16} />
+    </button>
+
+    <button
+      onClick={() => { setEditingAccount(null); setIsAccountModalOpen(true); }}
+      className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all"
+    >
+      <Plus size={20}/>
+    </button>
+  </div>
+</div>
             {ASSET_CATEGORIES.map((cat) => {
-              const filtered = accounts.filter(a => a.category === cat || (cat.includes('기타') && !ASSET_CATEGORIES.includes(a.category)));
+              const filtered = accounts
+              .filter(a => a.category === cat || (cat.includes('기타') && !ASSET_CATEGORIES.includes(a.category)))
+              .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
               if (filtered.length === 0) return null;
               return (
                 <div key={cat} className="space-y-3 mb-8 px-1">
@@ -521,7 +554,51 @@ const removeCustomManager = (name) => {
                           <button onClick={() => { setEditingAccount(acc); setIsAccountModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                           <button onClick={() => deleteDoc(doc(db, userPath, 'accounts', acc.id))} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
                         </div>
-                        <div className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-transform duration-300 z-10 cursor-pointer ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`} onClick={() => { if(swipedAccountId === acc.id) { setSwipedAccountId(null); } else { setSelectedAccount(acc); } }}>
+                        <div
+  draggable={isReorderMode}
+  onDragStart={(e) => {
+    e.dataTransfer.setData("accountId", acc.id);
+  }}
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={async (e) => {
+    e.preventDefault();
+
+    const draggedId = e.dataTransfer.getData("accountId");
+    if (!draggedId || draggedId === acc.id) return;
+
+    const sameCategoryAccounts = filtered;
+    const fromIndex = sameCategoryAccounts.findIndex(a => a.id === draggedId);
+    const toIndex = sameCategoryAccounts.findIndex(a => a.id === acc.id);
+
+    const reordered = [...sameCategoryAccounts];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+
+    // 🔥 Firestore 순서 저장
+    await Promise.all(
+      reordered.map((item, index) =>
+        updateDoc(doc(db, userPath, 'accounts', item.id), { order: index })
+      )
+    );
+  }}
+  className={`relative bg-white p-4 flex justify-between items-center border border-gray-50 shadow-sm transition-all duration-300 z-10 cursor-pointer ${
+    isReorderMode ? 'pl-28' : ''
+  } ${swipedAccountId === acc.id ? '-translate-x-32' : 'translate-x-0'}`}
+  onClick={() => {
+    if (isReorderMode) return;
+
+    if (swipedAccountId === acc.id) {
+      setSwipedAccountId(null);
+    } else {
+      setSelectedAccount(acc);
+    }
+  }}
+>
+  {isReorderMode && (
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-gray-400 font-black text-xl cursor-grab">
+      =
+    </div>
+  )}
                         <div className="flex items-center gap-3">
                         {acc.owner && (() => {
   const ownerColors = {
