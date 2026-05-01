@@ -249,6 +249,8 @@ const App = () => {
   const [goalMemo, setGoalMemo] = useState(() => localStorage.getItem('goalMemo') || '');
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null); // 이게 있어야 에러가 안 나요!
+  const [selectedHistory, setSelectedHistory] = useState(null); // 이것도 미리 넣어주세요!
   const [customManagers, setCustomManagers] = useState(() => {
     try { return JSON.parse(localStorage.getItem('customManagers') || '[]'); } catch { return []; }
   });
@@ -288,17 +290,22 @@ const App = () => {
     return Array.from(new Set(["신랑", "신부", ...customManagers, ...fromTx])).filter(m => m !== "기타 (직접 입력)");
   }, [transactions, customManagers]);
 
-  const addCustomManager = (name) => {
-    if (!name || customManagers.includes(name)) return;
-    const updated = [...customManagers, name];
+  // 1. 추가 기능: 이 주머니는 추가할 때만 써요!
+const addCustomManager = (name) => {
+  if (!name || customManagers.includes(name)) return;
+  const updated = [...customManagers, name];
+  setCustomManagers(updated);
+  localStorage.setItem('customManagers', JSON.stringify(updated));
+};
+
+// 2. 삭제 기능: 이 주머니를 밖으로 꺼냈어요! 이제 버튼이 이 기능을 찾을 수 있어요.
+const removeCustomManager = (name) => {
+  if (window.confirm('삭제하시겠습니까?')) {
+    const updated = customManagers.filter(m => m !== name);
     setCustomManagers(updated);
     localStorage.setItem('customManagers', JSON.stringify(updated));
-    const removeCustomManager = (name) => {
-      const updated = customManagers.filter(m => m !== name);
-      setCustomManagers(updated);
-      localStorage.setItem('customManagers', JSON.stringify(updated));
-    };
-  };
+  }
+};
 
   const multiCurrencyTotals = useMemo(() => {
     const totals = {};
@@ -444,7 +451,7 @@ const App = () => {
                   const progress = Math.min((spent / (plan.budget || 1)) * 100, 100);
                   const isOver = spent > plan.budget;
                   return (
-                    <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedExpensePlanId(swipedExpensePlanId === plan.id ? null : plan.id)}>
+                    <div key={plan.id} className="relative overflow-hidden rounded-2xl cursor-pointer" onClick={() => setSelectedPlan(plan)}>
                       <div className="absolute inset-0 flex justify-end">
                         <button onClick={(e) => { e.stopPropagation(); setExpensePlans(prev => { const idx = prev.findIndex(p => p.id === plan.id); return [...prev.slice(0, idx), plan, ...prev.slice(idx+1)]; }); setIsExpensePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
@@ -471,7 +478,7 @@ const App = () => {
                   const actual = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
                   const isSuccess = actual >= plan.budget;
                   return (
-                    <div key={plan.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedPlanId(swipedPlanId === plan.id ? null : plan.id)}>
+                    <div key={plan.id} className="relative overflow-hidden rounded-2xl cursor-pointer" onClick={() => setSelectedPlan(plan)}>
                       <div className="absolute inset-0 flex justify-end">
                         <button onClick={(e) => { e.stopPropagation(); setIncomePlans(prev => { const idx = prev.findIndex(p => p.id === plan.id); return [...prev.slice(0, idx), plan, ...prev.slice(idx+1)]; }); setIsIncomePlanModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                         <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'plans', plan.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
@@ -553,10 +560,25 @@ const App = () => {
               <div className="absolute top-12 left-0 right-0 mx-4 bg-white border shadow-2xl rounded-2xl p-5 z-40 space-y-5">
                 <div className="flex justify-between items-center mb-1"><p className="text-[10px] font-bold text-gray-400 uppercase">담당자 필터</p><button onClick={() => setIsManagerFilterOpen(false)}><X size={16} className="text-gray-400" /></button></div>
                 <div className="space-y-4">
-                  <div><label className="text-[9px] font-bold text-blue-500 mb-1 block">지출 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, expense: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense==='all'?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => <button key={m} onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense===m?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>)}</div></div>
-                  <div><label className="text-[9px] font-bold text-indigo-500 mb-1 block">수입 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, income: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income==='all'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => <button key={m} onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income===m?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>)}</div></div>
-                  <div><label className="text-[9px] font-bold text-gray-600 mb-1 block">자산 소유자</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, asset: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset==='all'?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => <button key={m} onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset===m?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>)}<button onClick={() => { const name = window.prompt('소유자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
-                </div>
+  <div><label className="text-[9px] font-bold text-blue-500 mb-1 block">지출 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, expense: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense==='all'?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
+  <div key={m} className="relative flex items-center">
+    <button onClick={() => setManagerFilter({...managerFilter, expense: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.expense===m?'bg-blue-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+  </div>
+))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
+  <div><label className="text-[9px] font-bold text-indigo-500 mb-1 block">수입 담당</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, income: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income==='all'?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
+  <div key={m} className="relative flex items-center">
+    <button onClick={() => setManagerFilter({...managerFilter, income: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.income===m?'bg-indigo-600 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+  </div>
+))}<button onClick={() => { const name = window.prompt('담당자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
+  <div><label className="text-[9px] font-bold text-gray-600 mb-1 block">자산 소유자</label><div className="flex gap-1 overflow-x-auto pb-1"><button onClick={() => setManagerFilter({...managerFilter, asset: 'all'})} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset==='all'?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>전체</button>{managerList.map(m => (
+  <div key={m} className="relative flex items-center">
+    <button onClick={() => setManagerFilter({...managerFilter, asset: m})} className={`px-3 py-1.5 pr-5 rounded-lg text-[11px] font-bold whitespace-nowrap ${managerFilter.asset===m?'bg-gray-800 text-white':'bg-gray-100 text-gray-500'}`}>{m}</button>
+    {customManagers.includes(m) && <button onClick={(e) => { e.stopPropagation(); removeCustomManager(m); }} className="absolute right-1 top-0.5 text-gray-400 hover:text-red-400"><X size={10}/></button>}
+  </div>
+))}<button onClick={() => { const name = window.prompt('소유자 이름 입력:'); if (name) addCustomManager(name); }} className="px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap bg-gray-100 text-gray-500">+ 추가</button></div></div>
+</div>
                 <div className="flex gap-2 pt-2 border-t border-gray-50"><button onClick={() => {setManagerFilter({expense:'all', income:'all', asset:'all'}); setIsManagerFilterOpen(false);}} className="flex-1 py-3 bg-gray-100 rounded-xl text-xs font-bold text-gray-500">초기화</button><button onClick={() => setIsManagerFilterOpen(false)} className="flex-1 py-3 bg-blue-600 rounded-xl text-xs font-bold text-white">적용</button></div>
               </div>
             )}
@@ -570,7 +592,14 @@ const App = () => {
                 const matchAssetOwner = managerFilter.asset === 'all' || (account && account.owner === managerFilter.asset);
                 return matchAsset && matchStart && matchEnd && matchMgr && matchAssetOwner;
               }).map(tx => (
-                <div key={tx.id} className="relative overflow-hidden rounded-2xl" onClick={() => setSwipedTxId(swipedTxId === tx.id ? null : tx.id)}>
+                <div 
+  key={tx.id} 
+  className="relative overflow-hidden rounded-2xl cursor-pointer" 
+  onClick={() => {
+    // 이제 클릭하면 상세 보기 팝업이 뜹니다!
+    setSelectedHistory(tx); 
+  }}
+>
                   <div className={`absolute inset-0 flex justify-end transition-opacity duration-300 ${swipedTxId === tx.id ? 'opacity-100' : 'opacity-0'}`}>
                     <button onClick={(e) => { e.stopPropagation(); setEditingTransaction(tx); setIsTransactionEditModalOpen(true); }} className="w-16 h-full bg-yellow-400 text-white flex items-center justify-center font-bold text-xs"><Edit size={14}/></button>
                     <button onClick={(e) => { e.stopPropagation(); deleteDoc(doc(db, userPath, 'transactions', tx.id)); }} className="w-16 h-full bg-red-500 text-white flex items-center justify-center font-bold text-xs"><Trash2 size={14}/></button>
@@ -592,28 +621,160 @@ const App = () => {
         <SidebarItem id="record" icon={PlusCircle} label="기록" activeTab={activeTab} setActiveTab={setActiveTab} />
         <SidebarItem id="history" icon={History} label="내역" activeTab={activeTab} setActiveTab={setActiveTab} />
       </nav>
-      {isExpensePlanModalOpen && (
-        <PlanModal
-          title="지출 계획 추가/수정"
-          plans={expensePlans}
-          categoryList={expenseCategoryList}
-          accounts={accounts}
-          userPath={userPath}
-          onClose={() => setIsExpensePlanModalOpen(false)}
-          color="blue"
-        />
+      
+{/* 2. 내역 상세 보기 팝업 (상세 정보 버전) */}
+{selectedHistory && (
+  <div className="absolute inset-0 bg-black/60 z-50 flex items-end" onClick={() => setSelectedHistory(null)}>
+    <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-bold">내역 상세 정보</h2>
+        <button onClick={() => setSelectedHistory(null)} className="text-gray-400 p-1"><X size={24}/></button>
+      </div>
+      
+      <div className="space-y-3 mb-8">
+        <div className="flex justify-between py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">날짜</span>
+          <span className="text-sm font-bold">{selectedHistory.date}</span>
+        </div>
+        <div className="flex justify-between py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">항목 / 성격</span>
+          <div className="text-right">
+            <span className="text-sm font-bold">{selectedHistory.category}</span>
+            <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${selectedHistory.type === 'expense' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
+              {selectedHistory.type === 'expense' ? '지출' : '수입'}
+            </span>
+          </div>
+        </div>
+        <div className="flex justify-between py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">금액</span>
+          <span className={`text-lg font-bold ${selectedHistory.type === 'expense' ? 'text-red-500' : 'text-blue-600'}`}>
+            {formatValue(selectedHistory.amount, selectedHistory.currency)}
+          </span>
+        </div>
+        <div className="flex justify-between py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">담당자</span>
+          <span className="text-sm font-bold">{selectedHistory.manager || '-'}</span>
+        </div>
+        <div className="flex justify-between py-2 border-b border-gray-50">
+          <span className="text-xs font-bold text-gray-400">이용 자산</span>
+          <span className="text-sm font-bold">
+            {accounts.find(a => a.id === selectedHistory.accountId)?.name || '삭제된 자산'}
+          </span>
+        </div>
+        {selectedHistory.memo && (
+          <div className="flex justify-between items-start py-2 border-b border-gray-50">
+            <span className="text-xs font-bold text-gray-400">메모</span>
+            <span className="text-sm font-bold text-right max-w-[60%]">{selectedHistory.memo}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        <button onClick={() => { setEditingTransaction(selectedHistory); setIsTransactionEditModalOpen(true); setSelectedHistory(null); }} className="flex-1 py-4 bg-yellow-400 text-white rounded-2xl font-bold shadow-md">수정</button>
+        <button onClick={() => { if(window.confirm('정말 삭제할까요?')) { deleteDoc(doc(db, userPath, 'transactions', selectedHistory.id)); setSelectedHistory(null); } }} className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold shadow-md">삭제</button>
+      </div>
+    </div>
+  </div>
+)}
+    {/* 1. 계획 상세 보기 팝업 (하단 탭 밀림 방지 + 버튼 색상 유지) */}
+    {selectedPlan && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end" onClick={() => setSelectedPlan(null)}>
+          <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-bold text-yellow-500 mb-1 uppercase">Plan Details</span>
+                <h2 className="text-xl font-bold text-gray-800">{selectedPlan.category} 계획 상세</h2>
+              </div>
+              <button onClick={() => setSelectedPlan(null)} className="bg-gray-100 p-2 rounded-full text-gray-400"><X size={20}/></button>
+            </div>
+
+            <div className="space-y-4 mb-8 text-left">
+              <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                <span className="text-sm font-medium text-gray-400">구분</span>
+                <span className={`text-sm font-bold ${selectedPlan.type === 'expense' ? 'text-red-500' : 'text-blue-500'}`}>
+                  {selectedPlan.type === 'expense' ? '지출 계획' : '수입 계획'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                <span className="text-sm font-medium text-gray-400">계획 금액</span>
+                <span className="text-lg font-black text-gray-800">{formatValue(selectedPlan.budget, selectedPlan.currency)}</span>
+              </div>
+              {selectedPlan.type === 'income' && (
+                <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                  <span className="text-sm font-medium text-gray-400">목표 금액</span>
+                  <span className="text-sm font-bold text-green-600">{formatValue(selectedPlan.targetAmount, selectedPlan.targetCurrency)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                <span className="text-sm font-medium text-gray-400">성격</span>
+                <span className="text-sm font-bold text-gray-700">{selectedPlan.nature || '변동'}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                <span className="text-sm font-medium text-gray-400">통장 쪼개기</span>
+                <div className="flex items-center gap-1 font-bold text-gray-700 text-sm">
+                  <Building2 size={14} className="text-gray-400" />
+                  {selectedPlan.accountSplit || '미연결'}
+                </div>
+              </div>
+              <div className="flex flex-col py-3 border-b border-gray-50">
+                <span className="text-sm font-medium text-gray-400 mb-2">비고(메모)</span>
+                <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 min-h-[60px] font-medium leading-relaxed">
+                  {selectedPlan.remarks || '입력된 메모가 없습니다.'}
+                </div>
+              </div>
+            </div>
+
+            {/* 사용자님이 정하신 버튼 색상 (노랑/빨강) 유지 */}
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => { 
+                  if(selectedPlan.type === 'expense') setIsExpensePlanModalOpen(true); 
+                  else setIsIncomePlanModalOpen(true); 
+                  setSelectedPlan(null); 
+                }} 
+                className="flex-1 py-4 bg-yellow-400 text-white rounded-2xl font-bold shadow-md active:scale-95 transition-transform"
+              >
+                수정
+              </button>
+              <button 
+                onClick={() => { 
+                  if(window.confirm('정말 이 계획을 삭제할까요?')) { 
+                    deleteDoc(doc(db, userPath, 'plans', selectedPlan.id)); 
+                    setSelectedPlan(null); 
+                  } 
+                }} 
+                className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold shadow-md active:scale-95 transition-transform"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      {isIncomePlanModalOpen && (
-        <PlanModal
-          title="수입 계획 추가/수정"
-          plans={incomePlans}
-          categoryList={incomeCategoryList}
-          accounts={accounts}
-          userPath={userPath}
-          onClose={() => setIsIncomePlanModalOpen(false)}
-          color="green"
-        />
-      )}
+
+{/* 기존의 PlanModal 입력창은 그대로 유지 (수정 버튼 누를 때 필요) */}
+{isExpensePlanModalOpen && (
+  <PlanModal
+    title="지출 계획 추가/수정"
+    plans={expensePlans}
+    categoryList={expenseCategoryList}
+    accounts={accounts}
+    userPath={userPath}
+    onClose={() => setIsExpensePlanModalOpen(false)}
+    color="blue"
+  />
+)}
+{isIncomePlanModalOpen && (
+  <PlanModal
+    title="수입 계획 추가/수정"
+    plans={incomePlans}
+    categoryList={incomeCategoryList}
+    accounts={accounts}
+    userPath={userPath}
+    onClose={() => setIsIncomePlanModalOpen(false)}
+    color="green"
+  />
+)}
       {selectedAccount && (
   <div className="absolute inset-0 bg-black/60 z-50 flex items-end" onClick={() => setSelectedAccount(null)}>
     <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -737,8 +898,8 @@ const AccountModalInner = ({ onSave, onCancel, initialData, managerList, addCust
         </div>
       </div>
       <div className="flex gap-2 pt-4">
-        <button onClick={onCancel} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-colors">취소</button>
-        <button onClick={() => onSave(data)} className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 text-center">저장하기</button>
+      <button onClick={onCancel} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-colors">취소</button>
+      <button onClick={() => onSave(data)} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 text-center">저장</button>
       </div>
     </div>
   );
@@ -757,7 +918,7 @@ const TransactionForm = ({ onSubmit, accounts, expenseCategoryList, incomeCatego
           <button onClick={() => setTx({...tx, type: 'income'})} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tx.type === 'income' ? 'bg-white text-blue-500 shadow-sm border' : 'text-gray-500'}`}>수입</button>
         </div>
         <div className="space-y-4">
-          <div className="flex gap-2 items-center py-3 px-3 bg-gray-50 rounded-2xl border">
+        <div className="flex gap-2 items-center py-3 px-3 bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
             <select value={tx.currency} onChange={e => setTx({...tx, currency: e.target.value})} className="bg-white p-1 rounded font-bold text-xs outline-none cursor-pointer border" style={{flexShrink: 0}}>
               {CURRENCY_UNITS.map(u => <option key={u.value} value={u.value}>{u.value}</option>)}
             </select>
