@@ -351,6 +351,7 @@ const App = () => {
   const [swipedTxId, setSwipedTxId] = useState(null);
   const [swipedPlanId, setSwipedPlanId] = useState(null);
   const [swipedExpensePlanId, setSwipedExpensePlanId] = useState(null);
+  const [planUpdateDay, setPlanUpdateDay] = useState(() => parseInt(localStorage.getItem('planUpdateDay') || '1'));
   const [goalMemo, setGoalMemo] = useState(() => localStorage.getItem('goalMemo') || '');
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -453,6 +454,11 @@ const removeCustomManager = (name) => {
   };
 
   const monthStart = `${selectedDate.slice(0, 7)}-01`;
+  const planStart = (() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), planUpdateDay); })();
+const planEnd = (() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth() + 1, planUpdateDay - 1); })();
+const planStartStr = `${planStart.getFullYear()}-${String(planStart.getMonth()+1).padStart(2,'0')}-${String(planStart.getDate()).padStart(2,'0')}`;
+const planEndStr = `${planEnd.getFullYear()}-${String(planEnd.getMonth()+1).padStart(2,'0')}-${String(planEnd.getDate()).padStart(2,'0')}`;
+const planPeriodTxs = transactions.filter(tx => tx.date >= planStartStr && tx.date <= planEndStr);
   const periodTxs = transactions.filter(tx => tx.date >= monthStart && tx.date <= selectedDate);
   const monthlySpent = periodTxs.filter(tx => tx.type === 'expense').reduce((s, c) => s + c.amount, 0);
   const monthlyIncome = periodTxs.filter(tx => tx.type === 'income').reduce((s, c) => s + c.amount, 0);
@@ -567,7 +573,30 @@ const removeCustomManager = (name) => {
         )}
         {activeTab === 'plan' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center px-2"><h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 계획</h2></div>
+            <div className="space-y-3 px-2">
+  <h2 className="text-lg font-bold flex items-center gap-2"><Target className="text-blue-600" /> 운영 계획</h2>
+  <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-2">
+    <div className="flex items-center justify-between">
+      <span className="text-xs font-bold text-gray-400">매월 업데이트일</span>
+      <select value={planUpdateDay} onChange={e => { const d = parseInt(e.target.value); setPlanUpdateDay(d); localStorage.setItem('planUpdateDay', String(d)); }} className="bg-gray-50 border rounded-lg px-2 py-1 text-xs font-bold outline-none">
+        {Array.from({length: 31}, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}일</option>)}
+      </select>
+    </div>
+    <div className="flex items-center justify-between">
+      <span className="text-xs font-bold text-gray-400">적용 기간</span>
+      <span className="text-xs font-bold text-blue-600">
+        {(() => {
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = today.getMonth();
+          const start = new Date(year, month, planUpdateDay);
+          const end = new Date(year, month + 1, planUpdateDay - 1);
+          return `${start.getFullYear()}.${String(start.getMonth()+1).padStart(2,'0')}.${String(start.getDate()).padStart(2,'0')} ~ ${end.getFullYear()}.${String(end.getMonth()+1).padStart(2,'0')}.${String(end.getDate()).padStart(2,'0')}`;
+        })()}
+      </span>
+    </div>
+  </div>
+</div>
             <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
                 <h3 className="text-sm font-bold text-gray-400 tracking-wide">지출 계획</h3>
@@ -575,7 +604,7 @@ const removeCustomManager = (name) => {
               </div>
               <div className="space-y-3">
                 {expensePlans.map(plan => {
-                  const spent = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
+                  const spent = planPeriodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
                   const progress = Math.min((spent / (plan.budget || 1)) * 100, 100);
                   const isOver = spent > plan.budget;
                   return (
@@ -616,7 +645,7 @@ const removeCustomManager = (name) => {
               </div>
               <div className="space-y-3">
                 {incomePlans.map(plan => {
-                  const actual = periodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
+                  const actual = planPeriodTxs.filter(tx => tx.category === plan.category).reduce((s,c)=>s+c.amount, 0);
                   const isSuccess = actual >= plan.budget;
                   return (
                     <div key={plan.id} className="relative overflow-hidden rounded-2xl cursor-pointer" onClick={() => setSelectedPlan(plan)}>
@@ -631,14 +660,29 @@ const removeCustomManager = (name) => {
                           {plan.nature && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">{plan.nature}</span>}
                         </div>
                         <div className="text-right">
-                          <p className={`text-sm font-bold ${isSuccess ? 'text-blue-600' : 'text-gray-400'}`}>{formatValue(actual, plan.currency)}</p>
-                          {isSuccess && <span className="text-[8px] text-blue-400 font-bold uppercase tracking-tighter">SUCCESS</span>}
+                          <p className={`text-sm font-bold ${isSuccess ? 'text-blue-600' : 'text-gray-400'}`}>
+                            {formatValue(actual, plan.currency)}
+                          </p>
+                          <p className="text-[9px] text-gray-400 font-bold">
+                            / {formatValue(plan.budget, plan.currency)}
+                          </p>
+                          {isSuccess && (
+                            <span className="text-[8px] text-blue-400 font-bold uppercase tracking-tighter">
+                              SUCCESS
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="space-y-0.5">
-                        {plan.accountSplit && <p className="text-[9px] text-gray-400 font-bold">🏦 통장: {plan.accountSplit}</p>}
-                        <p className="text-[9px] text-gray-400 font-bold">💰 예상: {formatValue(plan.budget, plan.currency)}</p>
-                        {plan.targetAmount > 0 && <p className="text-[9px] text-gray-400 font-bold">🎯 목표: {formatValue(plan.targetAmount, plan.targetCurrency)}</p>}
+                        {plan.accountSplit && (
+                          <p className="text-[9px] text-gray-400 font-bold">
+                            🏦 통장: {plan.accountSplit}
+                          </p>
+                        )}
+
+                        <p className="text-[9px] text-gray-400 font-bold">
+                          🎯 목표: {formatValue(plan.targetAmount || 0, plan.targetCurrency || plan.currency)}
+                        </p>
                       </div>
                     </div>
                     </div>
