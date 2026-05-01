@@ -393,7 +393,7 @@ const App = () => {
           setIsEditingGoal(true);
         }
       }}
-      className="text-xs font-bold px-3 py-1 rounded-lg bg-white text-blue-600 hover:bg-gray-100 transition-colors"
+      className="text-[11px] font-bold px-3 py-1 rounded-lg bg-blue-600 text-gray-200 hover:bg-blue-700 transition-colors"
     >
       {isEditingGoal ? '저장' : '수정'}
     </button>
@@ -408,9 +408,9 @@ const App = () => {
       onChange={e => setGoalMemo(e.target.value)}
     />
   ) : (
-    <p className="text-sm font-bold text-white whitespace-pre-wrap min-h-[40px]">
-      {goalMemo || <span className="text-gray-600">수정 버튼을 눌러 목표를 입력하세요</span>}
-    </p>
+    <p className="text-sm font-bold text-white min-h-[60px]" style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
+  {goalMemo || <span className="text-gray-600">수정 버튼을 눌러 목표를 입력하세요</span>}
+</p>
   )}
 </div>
             <div className="grid grid-cols-2 gap-4">
