@@ -229,12 +229,20 @@ const AuthScreen = () => {
 
 const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, color = 'blue' }) => {
   const [showSaveMsg, setShowSaveMsg] = useState(false);
-  const plan = plans[plans.length - 1];
+const [isCustomCategory, setIsCustomCategory] = useState(false);
+const plan = plans[plans.length - 1];
+const [remarksDraft, setRemarksDraft] = useState(plan?.remarks || '');
 
-  const handleSave = () => {
-    setShowSaveMsg(true);
-    setTimeout(() => { setShowSaveMsg(false); onClose(); }, 1500);
-  };
+const handleSave = async () => {
+  if (plan?.id) {
+    await updateDoc(doc(db, userPath, 'plans', plan.id), {
+      remarks: remarksDraft
+    });
+  }
+
+  setShowSaveMsg(true);
+  setTimeout(() => { setShowSaveMsg(false); onClose(); }, 1500);
+};
 
   return (
     <div className="fixed inset-0 bg-white z-[9999] flex items-center justify-center p-4">
@@ -243,12 +251,19 @@ const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, co
         <h2 className="text-lg font-bold mb-6">{title}</h2>
         <div className="bg-gray-50 rounded-2xl p-4 space-y-3 border border-gray-100 mb-4">
   <div className="grid grid-cols-2 gap-2">
-    <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">항목</label>
-      <select value={plan.category} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
-        {categoryList.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
+  <div className="space-y-1">
+  <label className="text-[9px] font-bold text-gray-400">항목</label>
+  {isCustomCategory ? (
+    <div className="relative">
+      <input autoFocus type="text" placeholder="직접 입력하세요" onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value })} className="w-full font-bold text-sm bg-blue-50 outline-none border-2 border-blue-200 rounded-lg p-2"/>
+      <button onClick={() => setIsCustomCategory(false)} className="absolute right-2 top-2 text-blue-400"><X size={14}/></button>
     </div>
+  ) : (
+    <select value={plan.category} onChange={e => { if(e.target.value === '기타 (직접 입력)') setIsCustomCategory(true); else updateDoc(doc(db, userPath, 'plans', plan.id), { category: e.target.value }); }} className="w-full font-bold text-sm bg-white outline-none border rounded-lg p-2">
+      {categoryList.map(c => <option key={c} value={c}>{c}</option>)}
+    </select>
+  )}
+</div>
     <div className="space-y-1">
       <label className="text-[9px] font-bold text-gray-400">성격</label>
       <select value={plan.nature || '변동'} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { nature: e.target.value })} className="w-full bg-white outline-none border rounded-lg p-2 text-xs font-bold">
@@ -288,14 +303,26 @@ const PlanModal = ({ title, plans, categoryList, accounts, userPath, onClose, co
   {color !== 'green' && (
     <div className="space-y-1">
       <label className="text-[9px] font-bold text-gray-400">비고</label>
-      <textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요"/>
+      <textarea
+  value={remarksDraft}
+  onChange={e => setRemarksDraft(e.target.value)}
+  rows={2}
+  className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border"
+  placeholder="메모를 입력하세요"
+/>
     </div>
   )}
 </div>
   {color === 'green' && (
     <div className="space-y-1">
-      <label className="text-[9px] font-bold text-gray-400">비고</label>
-      <textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요"/>
+      <label className="text-[9px] font-bold text-gray-400">비고</label><textarea
+  value={remarksDraft}
+  onChange={e => setRemarksDraft(e.target.value)}
+  rows={2}
+  className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border"
+  placeholder="메모를 입력하세요"
+/>
+<textarea value={plan.remarks || ''} onChange={e => updateDoc(doc(db, userPath, 'plans', plan.id), { remarks: e.target.value })} rows={2} className="w-full bg-white rounded-lg p-2 outline-none resize-none text-xs border" placeholder="메모를 입력하세요"/>
     </div>
   )}
 </div>
